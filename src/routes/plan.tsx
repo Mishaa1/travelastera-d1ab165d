@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { POPULAR_ORIGINS } from "@/data/cities";
+import { PlaceSearch } from "@/components/common/PlaceSearch";
+import { Textarea } from "@/components/ui/textarea";
 import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency, nightsBetween } from "@/lib/format";
-import type { Interest, LuxuryLevel, TransportMode } from "@/lib/types";
+import type { Activity, Diet, Interest, LuxuryLevel, TransportMode, TravelStyle } from "@/lib/types";
+import { DIET_LABEL } from "@/services/experienceService";
 import { cn } from "@/lib/utils";
 
 const TITLE = "Plan a trip — Safara trip optimiser";
@@ -57,7 +59,46 @@ const LUXURY: { id: LuxuryLevel; label: string; hint: string }[] = [
   { id: "luxury", label: "Luxury", hint: "Best in each city" },
 ];
 
-const STEPS = ["The basics", "What you enjoy", "How you move"] as const;
+const DIETS: Diet[] = [
+  "local-cuisine",
+  "vegetarian",
+  "vegan",
+  "halal",
+  "gluten-free",
+  "seafood",
+  "fine-dining",
+  "street-food",
+  "coffee",
+  "dessert",
+];
+
+const STYLES: { id: TravelStyle; label: string; hint: string }[] = [
+  { id: "couple", label: "Couple", hint: "Two of you, quieter evenings" },
+  { id: "family", label: "Family", hint: "Shorter transfers, green space" },
+  { id: "friends", label: "Friends", hint: "Central stays, late nights" },
+  { id: "solo", label: "Solo", hint: "Safe, social, easy to navigate" },
+  { id: "business", label: "Business", hint: "Transit links and reliability" },
+  { id: "honeymoon", label: "Honeymoon", hint: "Views, privacy, one big dinner" },
+];
+
+const ACTIVITIES: { id: Activity; label: string }[] = [
+  { id: "nature", label: "Nature" },
+  { id: "mountains", label: "Mountains" },
+  { id: "lakes", label: "Lakes" },
+  { id: "beaches", label: "Beaches" },
+  { id: "museums", label: "Museums" },
+  { id: "castles", label: "Castles" },
+  { id: "architecture", label: "Architecture" },
+  { id: "shopping", label: "Shopping" },
+  { id: "luxury", label: "Luxury" },
+  { id: "hidden-gems", label: "Hidden gems" },
+  { id: "photography", label: "Photography" },
+  { id: "hiking", label: "Hiking" },
+  { id: "theme-parks", label: "Theme parks" },
+  { id: "nightlife", label: "Nightlife" },
+];
+
+const STEPS = ["The basics", "What you enjoy", "How you move", "About you"] as const;
 
 function PlanPage() {
   const navigate = useNavigate();
@@ -73,6 +114,19 @@ function PlanPage() {
       ? preferences.interests.filter((item) => item !== interest)
       : [...preferences.interests, interest];
     update("interests", next);
+  };
+
+  const toggleDiet = (diet: Diet) => {
+    const current = preferences.diets ?? [];
+    update("diets", current.includes(diet) ? current.filter((d) => d !== diet) : [...current, diet]);
+  };
+
+  const toggleActivity = (activity: Activity) => {
+    const current = preferences.activities ?? [];
+    update(
+      "activities",
+      current.includes(activity) ? current.filter((a) => a !== activity) : [...current, activity],
+    );
   };
 
   return (
@@ -125,30 +179,23 @@ function PlanPage() {
               <div className="space-y-8 rounded-4xl border border-border bg-card p-6 shadow-soft md:p-9">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field label="Start city" id="start-city">
-                    <Input
+                    <PlaceSearch
                       id="start-city"
-                      list="origin-options"
-                      className="h-12 rounded-2xl"
+                      size="lg"
                       value={preferences.startCity}
-                      onChange={(event) => update("startCity", event.target.value)}
-                      placeholder="London"
+                      onChange={(value) => update("startCity", value)}
+                      placeholder="London, LHR or United Kingdom"
                     />
                   </Field>
                   <Field label="End city" id="end-city">
-                    <Input
+                    <PlaceSearch
                       id="end-city"
-                      list="origin-options"
-                      className="h-12 rounded-2xl"
+                      size="lg"
                       value={preferences.endCity}
-                      onChange={(event) => update("endCity", event.target.value)}
-                      placeholder="London"
+                      onChange={(value) => update("endCity", value)}
+                      placeholder="Anywhere you want to finish"
                     />
                   </Field>
-                  <datalist id="origin-options">
-                    {POPULAR_ORIGINS.map((origin) => (
-                      <option key={origin} value={origin} />
-                    ))}
-                  </datalist>
 
                   <Field label="Leaving" id="start-date">
                     <Input
@@ -310,6 +357,76 @@ function PlanPage() {
                 </fieldset>
               </div>
             )}
+
+            {step === 3 && (
+              <div className="space-y-8 rounded-4xl border border-border bg-card p-6 shadow-soft md:p-9">
+                <fieldset>
+                  <legend className="text-xs font-semibold tracking-wide uppercase">
+                    Who is travelling
+                  </legend>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {STYLES.map((style) => (
+                      <OptionTile
+                        key={style.id}
+                        label={style.label}
+                        hint={style.hint}
+                        active={preferences.travelStyle === style.id}
+                        onClick={() => update("travelStyle", style.id)}
+                      />
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend className="text-xs font-semibold tracking-wide uppercase">
+                    Food preferences
+                  </legend>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    We use these to filter every restaurant we suggest — and to say why.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {DIETS.map((diet) => (
+                      <Chip
+                        key={diet}
+                        label={DIET_LABEL[diet]}
+                        active={(preferences.diets ?? []).includes(diet)}
+                        onClick={() => toggleDiet(diet)}
+                      />
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend className="text-xs font-semibold tracking-wide uppercase">
+                    Activities you want
+                  </legend>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {ACTIVITIES.map((activity) => (
+                      <Chip
+                        key={activity.id}
+                        label={activity.label}
+                        active={(preferences.activities ?? []).includes(activity.id)}
+                        onClick={() => toggleActivity(activity.id)}
+                      />
+                    ))}
+                  </div>
+                </fieldset>
+
+                <Field label="Anything else we should know?" id="notes">
+                  <Textarea
+                    id="notes"
+                    rows={4}
+                    className="rounded-2xl"
+                    value={preferences.notes ?? ""}
+                    onChange={(event) => update("notes", event.target.value)}
+                    placeholder="e.g. I already have accommodation in Vienna, I want to avoid crowded cities, one of us cannot walk far."
+                  />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Free text. The optimiser reads it and explains how it used it.
+                  </p>
+                </Field>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -411,5 +528,23 @@ function ToggleRow({
       </div>
       <Switch id={id} checked={checked} onCheckedChange={onChange} className="shrink-0" />
     </div>
+  );
+}
+
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        active
+          ? "border-primary/40 bg-primary/10 text-foreground shadow-soft"
+          : "border-border bg-background text-muted-foreground hover:-translate-y-0.5 hover:text-foreground",
+      )}
+    >
+      {label}
+    </button>
   );
 }
