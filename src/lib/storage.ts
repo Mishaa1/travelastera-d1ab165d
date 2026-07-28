@@ -1,10 +1,14 @@
-import type { SavedTrip, TripPreferences, TripRoute } from "@/lib/types";
+import type { FavouriteItem, SavedTrip, TripPreferences, TripRoute } from "@/lib/types";
 
 const KEYS = {
   saved: "safara.saved-trips.v1",
   draft: "safara.planner-draft.v1",
   lastResults: "safara.last-results.v1",
+  favourites: "safara.favourites.v1",
+  recentPlaces: "safara.recent-places.v1",
+  searches: "safara.saved-searches.v1",
 } as const;
+
 
 const isBrowser = () => typeof window !== "undefined";
 
@@ -81,6 +85,74 @@ export const resultsStore = {
   },
   set(routes: TripRoute[]) {
     write(KEYS.lastResults, routes);
+  },
+};
+
+/** Bookmarked attractions, restaurants and day trips. */
+export const favouritesStore = {
+  key: KEYS.favourites,
+  all(): FavouriteItem[] {
+    return read<FavouriteItem[]>(KEYS.favourites, []);
+  },
+  has(id: string) {
+    return favouritesStore.all().some((item) => item.id === id);
+  },
+  toggle(item: Omit<FavouriteItem, "savedAt">): FavouriteItem[] {
+    const current = favouritesStore.all();
+    const next = current.some((entry) => entry.id === item.id)
+      ? current.filter((entry) => entry.id !== item.id)
+      : [{ ...item, savedAt: new Date().toISOString() }, ...current];
+    write(KEYS.favourites, next);
+    return next;
+  },
+  remove(id: string): FavouriteItem[] {
+    const next = favouritesStore.all().filter((item) => item.id !== id);
+    write(KEYS.favourites, next);
+    return next;
+  },
+};
+
+/** Recently picked locations, newest first. */
+export const recentPlacesStore = {
+  key: KEYS.recentPlaces,
+  all(): string[] {
+    return read<string[]>(KEYS.recentPlaces, []);
+  },
+  push(placeId: string): string[] {
+    const next = [placeId, ...recentPlacesStore.all().filter((id) => id !== placeId)].slice(0, 6);
+    write(KEYS.recentPlaces, next);
+    return next;
+  },
+};
+
+export interface SavedSearch {
+  id: string;
+  label: string;
+  savedAt: string;
+  preferences: TripPreferences;
+}
+
+/** Re-runnable searches so travellers never retype their constraints. */
+export const savedSearchesStore = {
+  key: KEYS.searches,
+  all(): SavedSearch[] {
+    return read<SavedSearch[]>(KEYS.searches, []);
+  },
+  save(preferences: TripPreferences, label: string): SavedSearch[] {
+    const entry: SavedSearch = {
+      id: `search-${Date.now()}`,
+      label,
+      savedAt: new Date().toISOString(),
+      preferences,
+    };
+    const next = [entry, ...savedSearchesStore.all()].slice(0, 12);
+    write(KEYS.searches, next);
+    return next;
+  },
+  remove(id: string): SavedSearch[] {
+    const next = savedSearchesStore.all().filter((entry) => entry.id !== id);
+    write(KEYS.searches, next);
+    return next;
   },
 };
 

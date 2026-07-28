@@ -2,7 +2,10 @@ import { ESTIMATE_QUALITY } from "@/api/config";
 import { CITIES, CITY_BY_ID, REGION_IMAGES, type CityRecord } from "@/data/cities";
 import { addDays, nightsBetween } from "@/lib/format";
 import type {
+  Activity,
   CostBreakdown,
+  TravelStyle,
+
   DayPlan,
   Interest,
   OptimiseGoal,
@@ -64,6 +67,40 @@ const STRATEGIES: Strategy[] = [
     stopCount: () => 2,
   },
 ];
+
+/** How each activity chip feeds the nine engine interests. */
+const ACTIVITY_INTEREST: Record<Activity, Interest[]> = {
+  nature: ["nature"],
+  mountains: ["nature", "adventure"],
+  lakes: ["nature", "photography"],
+  beaches: ["nature"],
+  museums: ["museums"],
+  castles: ["history"],
+  shopping: ["shopping"],
+  luxury: ["luxury"],
+  "hidden-gems": ["history", "food"],
+  photography: ["photography"],
+  hiking: ["adventure", "nature"],
+  "theme-parks": ["adventure"],
+  architecture: ["history", "photography"],
+  nightlife: ["nightlife"],
+};
+
+const TRAVEL_STYLE_NOTE: Record<TravelStyle, string> = {
+  couple: "two people travelling together — quieter neighbourhoods and good tables",
+  family: "a family — shorter transfers, green space and step-free options",
+  friends: "a group — central stays and walkable nightlife",
+  solo: "solo travel — safe, social and easy to navigate alone",
+  business: "a working trip — transit links and reliable evenings",
+  honeymoon: "a honeymoon — views, privacy and one memorable dinner per city",
+};
+
+/** Merges the planner's activity chips into the engine's interest vector. */
+export function effectiveInterests(prefs: TripPreferences): Interest[] {
+  const derived = (prefs.activities ?? []).flatMap((activity) => ACTIVITY_INTEREST[activity] ?? []);
+  return [...new Set<Interest>([...(prefs.interests ?? []), ...derived])];
+}
+
 
 const clamp = (value: number, min = 0, max = 100) => Math.max(min, Math.min(max, value));
 
@@ -359,7 +396,14 @@ async function buildRoute(
     prefs.avoidFlights
       ? "You asked to avoid flying, so every leg is rail or road even where a flight would be faster."
       : `Transport mix chosen for the ${prefs.transport} preference at the lowest total hours.`,
-  ];
+    prefs.travelStyle
+      ? `Pace, stay type and evenings are tuned for ${TRAVEL_STYLE_NOTE[prefs.travelStyle]}.`
+      : "",
+    prefs.notes.trim()
+      ? `We also read your note — "${prefs.notes.trim().slice(0, 140)}" — and kept it in mind when ordering the stops.`
+      : "",
+  ].filter(Boolean);
+
 
   const dominantMode = legs.reduce<Record<string, number>>((acc, leg) => {
     acc[leg.mode] = (acc[leg.mode] ?? 0) + leg.hours;
@@ -399,7 +443,12 @@ async function buildRoute(
 }
 
 /** Generates four distinct optimised routes for a set of preferences. */
-export async function optimiseTrip({ preferences }: OptimiseInput): Promise<TripRoute[]> {
+export async function optimiseTrip(input: OptimiseInput): Promise<TripRoute[]> {
+  const preferences: TripPreferences = {
+    ...input.preferences,
+    interests: effectiveInterests(input.preferences),
+  };
+
   const [start, end] = await Promise.all([
     geocodeCity(preferences.startCity || "London"),
     geocodeCity(preferences.endCity || preferences.startCity || "London"),
@@ -412,6 +461,7 @@ export async function optimiseTrip({ preferences }: OptimiseInput): Promise<Trip
   const routes: TripRoute[] = [];
   for (const strategy of STRATEGIES) {
     const route = await buildRoute(strategy, preferences, startPoint, endPoint, used);
+
     route.stops.slice(0, 2).forEach((stop) => used.add(stop.id));
     routes.push(route);
   }
@@ -486,4 +536,9 @@ export const SAMPLE_PREFERENCES: TripPreferences = {
   avoidFlights: false,
   fewerHotelChanges: false,
   luxuryLevel: "boutique",
+  diets: ["local-cuisine"],
+  travelStyle: "couple",
+  activities: ["nature", "photography", "hidden-gems"],
+  notes: "",
 };
+
