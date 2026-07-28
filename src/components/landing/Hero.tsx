@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useMemo, useRef } from "react";
 
 import heroImage from "@/assets/hero-coast.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
+import { PlaceSearch } from "@/components/common/PlaceSearch";
 import { RouteSketch } from "@/components/map/RouteSketch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,19 +118,15 @@ export function Hero() {
               <Label htmlFor="hero-start" className="text-xs font-semibold tracking-wide uppercase">
                 Starting from
               </Label>
-              <div className="relative mt-2">
-                <MapPin
-                  className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
-                <Input
-                  id="hero-start"
-                  value={preferences.startCity}
-                  onChange={(event) => update("startCity", event.target.value)}
-                  className="h-12 rounded-2xl pl-9"
-                  placeholder="London"
-                />
-              </div>
+              <PlaceSearch
+                className="mt-2"
+                id="hero-start"
+                size="lg"
+                value={preferences.startCity}
+                onChange={(value: string) => update("startCity", value)}
+                placeholder="City, airport or country"
+              />
+
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:col-span-1">

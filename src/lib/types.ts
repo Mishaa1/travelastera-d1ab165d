@@ -35,6 +35,38 @@ export type TransportMode = "flight" | "train" | "car" | "mixed";
 
 export type LuxuryLevel = "hostel" | "midscale" | "boutique" | "luxury";
 
+/** Food and dietary context used to filter and explain restaurant picks. */
+export type Diet =
+  | "halal"
+  | "vegetarian"
+  | "vegan"
+  | "gluten-free"
+  | "seafood"
+  | "local-cuisine"
+  | "fine-dining"
+  | "street-food"
+  | "coffee"
+  | "dessert";
+
+export type TravelStyle = "couple" | "family" | "friends" | "solo" | "business" | "honeymoon";
+
+/** Richer activity vocabulary shown in the planner; mapped onto `Interest`. */
+export type Activity =
+  | "nature"
+  | "mountains"
+  | "lakes"
+  | "beaches"
+  | "museums"
+  | "castles"
+  | "shopping"
+  | "luxury"
+  | "hidden-gems"
+  | "photography"
+  | "hiking"
+  | "theme-parks"
+  | "architecture"
+  | "nightlife";
+
 export interface TripPreferences {
   startCity: string;
   endCity: string;
@@ -49,7 +81,15 @@ export interface TripPreferences {
   avoidFlights: boolean;
   fewerHotelChanges: boolean;
   luxuryLevel: LuxuryLevel;
+  /** Traveller profile — influences explanations and future optimisation. */
+  diets: Diet[];
+  travelStyle: TravelStyle;
+  activities: Activity[];
+  /** Free-text context, e.g. "I already have accommodation in Vienna." */
+  notes: string;
 }
+
+
 
 export interface CostBreakdown {
   transport: number;
@@ -148,3 +188,16 @@ export type OptimiseGoal =
   | "more-nature"
   | "more-luxury"
   | "avoid-flights";
+
+/** Anything a traveller can bookmark locally. */
+export type FavouriteKind = "attraction" | "restaurant" | "daytrip";
+
+export interface FavouriteItem {
+  id: string;
+  kind: FavouriteKind;
+  title: string;
+  subtitle: string;
+  image: string;
+  meta: string;
+  savedAt: string;
+}
