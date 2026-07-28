@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useMemo, useRef } from "react";
 
 import heroImage from "@/assets/hero-coast.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
+import { PlaceSearch } from "@/components/common/PlaceSearch";
 import { RouteSketch } from "@/components/map/RouteSketch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,7 +123,7 @@ export function Hero() {
                 id="hero-start"
                 size="lg"
                 value={preferences.startCity}
-                onChange={(value) => update("startCity", value)}
+                onChange={(value: string) => update("startCity", value)}
                 placeholder="City, airport or country"
               />
 
