@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Safara design system — premium travel optimiser.
+ * Astera design system — premium travel optimiser.
  * Warm white canvas, deep blue ink, teal / emerald / sunset accents.
  * All colours are oklch tokens. Never hardcode colours in components.
  */
@@ -282,4 +282,11 @@
 
 @utility drift {
   animation: safara-drift 9s ease-in-out infinite;
+}
+
+@utility wordmark-track {
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  /* the trailing letter-space would otherwise offset optical centring */
+  margin-right: -0.19em;
 }

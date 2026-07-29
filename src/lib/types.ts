@@ -1,4 +1,4 @@
-/** Shared domain types for the Safara optimisation engine. */
+/** Shared domain types for the Astera optimisation engine. */
 
 export type DataSource = "live" | "estimate" | "mock";
 

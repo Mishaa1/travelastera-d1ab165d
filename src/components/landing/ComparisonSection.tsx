@@ -33,7 +33,7 @@ export function ComparisonSection() {
             The difference
           </p>
           <h2 className="mt-4 max-w-2xl text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.03] font-semibold">
-            Traditional planning vs Safara
+            Traditional planning vs Astera
           </h2>
         </Reveal>
 
@@ -53,7 +53,7 @@ export function ComparisonSection() {
           </Reveal>
 
           <Reveal delay={0.1} className="rounded-4xl border border-primary/25 bg-card p-7 shadow-float md:p-9">
-            <h3 className="font-display text-xl font-semibold text-gradient-dawn">Safara</h3>
+            <h3 className="font-display text-xl font-semibold text-gradient-dawn">Astera</h3>
             <ul className="mt-6 space-y-4">
               {SAFARA.map((item) => (
                 <li key={item} className="flex gap-3 text-sm">

@@ -78,13 +78,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Safara — AI Travel Optimiser" },
+      { title: "Astera — AI Travel Optimiser" },
       {
         name: "description",
         content:
-          "Safara finds the best possible trip for your budget, dates and interests instead of asking you to pick a destination first.",
+          "Astera finds the best possible trip for your budget, dates and interests instead of asking you to pick a destination first.",
       },
-      { name: "author", content: "Safara" },
+      { name: "author", content: "Astera" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

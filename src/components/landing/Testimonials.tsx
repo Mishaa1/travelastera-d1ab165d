@@ -5,7 +5,7 @@ import { Reveal } from "@/components/common/Reveal";
 const TESTIMONIALS = [
   {
     quote:
-      "I had £1,400 and three weeks off. Safara came back with Kraków, Ljubljana and Split — I'd never have put those three together, and I came home with £180 left.",
+      "I had £1,400 and three weeks off. Astera came back with Kraków, Ljubljana and Split — I'd never have put those three together, and I came home with £180 left.",
     name: "Amara O.",
     detail: "Manchester → Central Europe",
   },

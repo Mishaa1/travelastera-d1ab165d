@@ -1,6 +1,8 @@
 import { Footprints, Sparkles, Star, UtensilsCrossed } from "lucide-react";
 
+import { ExperienceImage } from "@/components/common/ExperienceImage";
 import { FavouriteButton } from "@/components/discover/FavouriteButton";
+
 import {
   DIET_LABEL,
   priceLevelLabel,
@@ -19,15 +21,15 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
   const wanted = preferences.diets ?? [];
 
   return (
-    <article className="card-lift flex gap-4 overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-soft">
-      <img
+    <article className="card-lift group flex gap-4 overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-soft">
+      <ExperienceImage
         src={restaurant.image}
         alt={`${restaurant.name}, ${restaurant.cuisine} in ${restaurant.city}`}
         width={320}
         height={320}
-        loading="lazy"
-        className="h-28 w-28 shrink-0 rounded-2xl object-cover sm:h-32 sm:w-32"
+        ratioClassName="h-28 w-28 shrink-0 rounded-2xl sm:h-32 sm:w-32"
       />
+
 
       <div className="min-w-0 flex-1 space-y-2 py-1 pr-1">
         <div className="flex items-start justify-between gap-2">
@@ -88,10 +90,14 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
           })}
         </div>
 
-        <p className="flex gap-2 text-xs text-muted-foreground">
-          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-          {restaurant.why}
-        </p>
+        <div className="rounded-2xl bg-secondary/60 px-3 py-2">
+          <p className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
+            Why Astera picked this
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{restaurant.why}</p>
+        </div>
+
       </div>
     </article>
   );

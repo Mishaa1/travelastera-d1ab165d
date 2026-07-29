@@ -191,7 +191,7 @@ const HISTORIC_NOTE: Record<ExperienceCategory, string[]> = {
   food: ["Recipes protected by regional designation", "One of the oldest food halls in the country", "Traditional method, unchanged"],
 };
 
-const CATEGORY_ACTIVITY: Record<ExperienceCategory, Activity[]> = {
+export const CATEGORY_ACTIVITY: Record<ExperienceCategory, Activity[]> = {
   landmark: ["castles", "architecture", "hidden-gems"],
   museum: ["museums"],
   nature: ["nature", "lakes", "hiking"],
@@ -224,7 +224,7 @@ const CATEGORY_ORDER: ExperienceCategory[] = [
   "nightlife",
 ];
 
-const ACTIVITY_LABEL: Record<Activity, string> = {
+export const ACTIVITY_LABEL: Record<Activity, string> = {
   nature: "nature",
   mountains: "mountains",
   lakes: "lakes",
@@ -312,7 +312,7 @@ export function getAttractions(
         category === "nature" || category === "viewpoint"
           ? "Free to visit"
           : `From €${between(`${seed}p`, 6, 28)} per person`,
-      quality: MOCK_QUALITY("Safara experience model"),
+      quality: MOCK_QUALITY("Astera experience model"),
     } satisfies Attraction;
   });
 }
@@ -422,7 +422,7 @@ export function getRestaurants(
       why: matches.length
         ? `Matches your ${listWords(matches.map((diet) => DIET_LABEL[diet].toLowerCase()))} preference, and it is ${walkMinutes} minutes on foot from ${stop.hotel.area}.`
         : `Consistently the highest-rated table within ${walkMinutes} minutes of ${stop.hotel.area}, at a price level that fits your budget.`,
-      quality: MOCK_QUALITY("Safara experience model"),
+      quality: MOCK_QUALITY("Astera experience model"),
     } satisfies Restaurant;
   });
 }
@@ -469,7 +469,7 @@ export function getDayTrips(stop: Pick<TripStop, "id" | "name" | "dayTrips">): D
       length,
       difficulty,
       why: pick(TRIP_REASONS, `${seed}r`),
-      quality: MOCK_QUALITY("Safara day-trip model"),
+      quality: MOCK_QUALITY("Astera day-trip model"),
     } satisfies DayTrip;
   });
 }
@@ -502,7 +502,7 @@ export function getNeighbourhood(stop: TripStop): NeighbourhoodProfile {
     safetyScore: clamp(74 + (hash(`${seed}s`) % 22)),
     nightlifeScore: clamp(city?.scores.nightlife ?? 68),
     familyScore: clamp(96 - (city?.scores.nightlife ?? 60) * 0.35 + (hash(`${seed}f`) % 10)),
-    quality: ESTIMATE_QUALITY("Safara neighbourhood model"),
+    quality: ESTIMATE_QUALITY("Astera neighbourhood model"),
   };
 }
 
@@ -546,7 +546,7 @@ export function describeLeg(leg: RouteLeg, travellers: number): LegDetail {
       leg.mode === "flight" ? "Carry-on included (placeholder)" : "Luggage included",
     co2Kg: Math.round(approxKm * CO2_PER_KM[leg.mode] * Math.max(1, travellers)),
     price: leg.cost,
-    quality: MOCK_QUALITY("Safara transport model"),
+    quality: MOCK_QUALITY("Astera transport model"),
   };
 }
 

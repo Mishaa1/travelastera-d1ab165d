@@ -18,7 +18,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import type { OptimiseGoal, TripRoute } from "@/lib/types";
 import { SAMPLE_PREFERENCES, optimiseFurther, optimiseTrip } from "@/services/tripOptimizer";
 
-const TITLE = "Your optimised routes — Safara";
+const TITLE = "Your optimised routes — Astera";
 const DESCRIPTION =
   "Four AI-optimised routes ranked by trip score, cost, transit time and how well each one matches your interests.";
 

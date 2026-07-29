@@ -21,7 +21,7 @@ import { estimateNightlyRate, searchHotel } from "@/services/hotelService";
 import { getStopWeather } from "@/services/weatherService";
 
 /**
- * The Safara optimisation engine.
+ * The Astera optimisation engine.
  *
  * Given a budget, dates and constraints it explores candidate city
  * combinations, prices each one through the transport / hotel services and
@@ -436,7 +436,7 @@ async function buildRoute(
     reasoning,
     packingList: packingFor(stops, prefs),
     itinerary,
-    quality: ESTIMATE_QUALITY("Safara optimisation engine"),
+    quality: ESTIMATE_QUALITY("Astera optimisation engine"),
     preferences: prefs,
     generatedAt: new Date().toISOString(),
   };

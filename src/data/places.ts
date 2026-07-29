@@ -1,7 +1,7 @@
 import { CITIES } from "@/data/cities";
 
 /**
- * Search index behind every Safara location field.
+ * Search index behind every Astera location field.
  *
  * Cities, their primary airports and countries live in one flat list so a
  * single component can power destination, airport, city and country search.

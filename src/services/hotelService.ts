@@ -37,7 +37,7 @@ export async function searchHotel(params: HotelSearchParams): Promise<HotelSugge
     style: `${LUXURY_LABEL[params.luxuryLevel]} · ${city?.hotels[0]?.style ?? "Well rated"}`,
     nightlyFrom: Math.round((city?.hotels[0]?.nightlyFrom ?? 95) * LUXURY_FACTOR[params.luxuryLevel]),
     rating: city?.hotels[0]?.rating ?? 4.4,
-    quality: MOCK_QUALITY("Safara sample inventory"),
+    quality: MOCK_QUALITY("Astera sample inventory"),
   };
 
   if (!API_CONFIG.hotels.enabled || !API_CONFIG.hotels.baseUrl) return fallback;
@@ -70,6 +70,6 @@ export function estimateNightlyRate(cityId: string, luxuryLevel: LuxuryLevel) {
   const base = city?.hotels[0]?.nightlyFrom ?? 95;
   return {
     nightly: Math.round(base * LUXURY_FACTOR[luxuryLevel]),
-    quality: ESTIMATE_QUALITY("Safara rate model"),
+    quality: ESTIMATE_QUALITY("Astera rate model"),
   };
 }

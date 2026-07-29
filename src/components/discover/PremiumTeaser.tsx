@@ -11,7 +11,7 @@ interface PremiumTeaserProps {
 
 /**
  * Placeholder for the paid tier. Deliberately non-functional — it signals
- * where Safara Premium lands without pretending the feature exists yet.
+ * where Astera Premium lands without pretending the feature exists yet.
  */
 export function PremiumTeaser({ title, description, items, className }: PremiumTeaserProps) {
   return (
@@ -23,7 +23,7 @@ export function PremiumTeaser({ title, description, items, className }: PremiumT
     >
       <span className="inline-flex items-center gap-1.5 rounded-full bg-ink px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-foreground uppercase">
         <Crown className="h-3.5 w-3.5" aria-hidden />
-        Safara Premium · coming soon
+        Astera Premium · coming soon
       </span>
 
       <h3 className="mt-4 font-display text-2xl font-semibold">{title}</h3>

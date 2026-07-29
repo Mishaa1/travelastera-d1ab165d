@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { ScoreRing } from "@/components/common/ScoreRing";
 import { Button } from "@/components/ui/button";
+import { Wordmark } from "@/components/layout/Wordmark";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ export function ShareCard({ route }: { route: TripRoute }) {
   const summary = [
     `${route.title} — ${route.stops.map((stop) => stop.name).join(" → ")}`,
     `${route.stops.reduce((total, stop) => total + stop.nights, 0)} nights · ${formatCurrency(route.cost, route.preferences.currency)} · ${formatHours(route.journeyHours)} in transit`,
-    `Optimisation score ${route.scores.overall}/100 — planned with Safara.`,
+    `Optimisation score ${route.scores.overall}/100 — planned with Astera.`,
   ].join("\n");
 
   async function copy(text: string, kind: "link" | "summary") {
@@ -65,6 +66,11 @@ export function ShareCard({ route }: { route: TripRoute }) {
             className="h-44 w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent" />
+          <Wordmark
+            withMark
+            size="sm"
+            className="absolute top-3 right-4 text-primary-foreground/90"
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold tracking-widest text-primary-foreground/75 uppercase">

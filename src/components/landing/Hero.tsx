@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react";
 
 import heroImage from "@/assets/hero-coast.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
+import { Wordmark } from "@/components/layout/Wordmark";
 import { PlaceSearch } from "@/components/common/PlaceSearch";
 import { RouteSketch } from "@/components/map/RouteSketch";
 import { Button } from "@/components/ui/button";
@@ -58,15 +59,19 @@ export function Hero() {
         style={{ y: contentY }}
         className="mx-auto max-w-7xl px-5 pt-32 pb-16 md:px-8 md:pt-48 md:pb-28"
       >
-        <motion.span
+        <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center gap-2 rounded-full surface-glass px-4 py-1.5 text-xs font-semibold tracking-wide text-foreground uppercase"
+          className="flex flex-wrap items-center gap-x-5 gap-y-3"
         >
-          <Sparkles className="h-3.5 w-3.5" aria-hidden />
-          AI travel optimiser · not another itinerary planner
-        </motion.span>
+          <Wordmark withMark size="lg" className="text-primary-foreground" />
+          <span className="inline-flex items-center gap-2 rounded-full surface-glass px-4 py-1.5 text-xs font-semibold tracking-wide text-foreground uppercase">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            AI travel optimiser · not another itinerary planner
+          </span>
+        </motion.div>
+
 
         <motion.h1
           initial={{ opacity: 0, y: 22 }}

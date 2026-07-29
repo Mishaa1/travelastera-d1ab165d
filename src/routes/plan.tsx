@@ -17,9 +17,9 @@ import type { Activity, Diet, Interest, LuxuryLevel, TransportMode, TravelStyle 
 import { DIET_LABEL } from "@/services/experienceService";
 import { cn } from "@/lib/utils";
 
-const TITLE = "Plan a trip — Safara trip optimiser";
+const TITLE = "Plan a trip — Astera trip optimiser";
 const DESCRIPTION =
-  "Set your budget, dates, start and end city, interests and transport limits. Safara searches every combination and returns four optimised routes.";
+  "Set your budget, dates, start and end city, interests and transport limits. Astera searches every combination and returns four optimised routes.";
 
 export const Route = createFileRoute("/plan")({
   head: () => ({
