@@ -1,15 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { ArrowRight, Bookmark, BookmarkCheck, GitCompare, Sparkles, Timer, Wallet } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  BookmarkCheck,
+  ChevronDown,
+  GitCompare,
+  PiggyBank,
+  Sparkles,
+  Timer,
+  Wallet,
+} from "lucide-react";
+import { useMemo } from "react";
 
 import { DataBadge } from "@/components/common/DataBadge";
 import { ScoreBar } from "@/components/common/ScoreBar";
 import { ScoreRing } from "@/components/common/ScoreRing";
+import { ScoreBreakdown } from "@/components/trip/ScoreBreakdown";
 import { RouteSketch } from "@/components/map/RouteSketch";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatHours } from "@/lib/format";
 import type { TripRoute } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
 
 interface TripCardProps {
   route: TripRoute;
@@ -32,6 +45,17 @@ export function TripCard({
 }: TripCardProps) {
   const currency = route.preferences.currency;
   const overBudget = route.budgetLeft < 0;
+
+  /** The single biggest saving available, teased here and detailed on the itinerary. */
+  const topSaving = useMemo(
+    () =>
+      [...(route.stretchOptions ?? [])]
+        .filter((option) => option.costDelta < 0)
+        .sort((a, b) => a.costDelta - b.costDelta)[0],
+    [route.stretchOptions],
+  );
+
+
 
   return (
     <motion.article
@@ -114,6 +138,44 @@ export function TripCard({
           <ScoreBar label="Travel efficiency" value={route.scores.efficiency} tone="primary" delay={0.2} />
         </div>
 
+        {route.reasoning.length > 0 && (
+          <p className="rounded-2xl bg-primary/6 p-4 text-sm leading-relaxed">
+            <span className="font-semibold">Why this route: </span>
+            {route.reasoning[0]}
+          </p>
+        )}
+
+        {route.scoreFactors?.length > 0 && (
+          <details className="group/score rounded-3xl border border-border">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium">
+              How we scored it
+              <ChevronDown
+                className="h-4 w-4 text-muted-foreground transition-transform group-open/score:rotate-180"
+                aria-hidden
+              />
+            </summary>
+            <div className="px-2 pb-2">
+              <ScoreBreakdown
+                factors={route.scoreFactors}
+                overall={route.scores.overall}
+                className="border-0 bg-transparent p-2"
+              />
+            </div>
+          </details>
+        )}
+
+        {topSaving && (
+          <p className="flex items-start gap-2 rounded-2xl bg-emerald/8 p-3 text-xs leading-relaxed">
+            <PiggyBank className="mt-0.5 h-4 w-4 shrink-0 text-emerald" aria-hidden />
+            <span>
+              <span className="font-semibold text-emerald">
+                Save {formatCurrency(Math.abs(topSaving.costDelta), currency)}
+              </span>{" "}
+              — {topSaving.label.toLowerCase()}. Full list of adjustments is on the itinerary.
+            </span>
+          </p>
+        )}
+
         <dl className="grid gap-3 rounded-3xl bg-secondary/70 p-4 text-sm sm:grid-cols-2">
           <Detail label="Hotel pick" value={`${route.stops[0].hotel.name} · ${route.stops[0].hotel.area}`} />
           <Detail label="Transport" value={route.transportRecommendation} />
@@ -123,6 +185,7 @@ export function TripCard({
             value={`${route.stops[0].weather.tempC}°C · ${route.stops[0].weather.summary}`}
           />
         </dl>
+
 
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="hero" className="flex-1 min-w-36">

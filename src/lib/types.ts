@@ -152,6 +152,32 @@ export interface TripScores {
   efficiency: number;
 }
 
+/** One transparent contributor to a route's overall score. */
+export interface ScoreFactor {
+  key: string;
+  label: string;
+  /** 0-100 score for this factor. */
+  value: number;
+  /** Share of the overall score, 0-1. */
+  weight: number;
+  /** Plain-language reason, written for a traveller not an engineer. */
+  explanation: string;
+}
+
+/**
+ * A concrete, locally-costed change a traveller can apply to a route without
+ * re-running the whole optimiser.
+ */
+export interface BudgetStretchOption {
+  id: string;
+  label: string;
+  detail: string;
+  /** Negative saves money, positive spends more. */
+  costDelta: number;
+  tradeoff: string;
+}
+
+
 export interface TripRoute {
   id: string;
   title: string;
@@ -161,12 +187,17 @@ export interface TripRoute {
   stops: TripStop[];
   legs: RouteLeg[];
   scores: TripScores;
+  /** Transparent breakdown of how `scores.overall` was reached. */
+  scoreFactors: ScoreFactor[];
+  /** Cheap, locally-costed adjustments offered under "Stretch your budget". */
+  stretchOptions: BudgetStretchOption[];
   cost: number;
   costBreakdown: CostBreakdown;
   budgetLeft: number;
   journeyHours: number;
   transportRecommendation: string;
   reasoning: string[];
+
   packingList: string[];
   itinerary: DayPlan[];
   quality: DataQuality;

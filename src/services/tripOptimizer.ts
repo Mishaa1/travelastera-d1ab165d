@@ -1,15 +1,18 @@
 import { ESTIMATE_QUALITY } from "@/api/config";
 import { CITIES, CITY_BY_ID, REGION_IMAGES, type CityRecord } from "@/data/cities";
-import { addDays, nightsBetween } from "@/lib/format";
+import { addDaysIso, nightsBetweenSafe, toIsoDate, todayIso } from "@/lib/date";
+import { assertUniqueItinerary, ExperienceRegistry } from "@/lib/dedupe";
+import { addDays } from "@/lib/format";
 import type {
   Activity,
+  BudgetStretchOption,
   CostBreakdown,
-  TravelStyle,
-
   DayPlan,
   Interest,
   OptimiseGoal,
   RouteLeg,
+  ScoreFactor,
+  TravelStyle,
   TripPreferences,
   TripRoute,
   TripScores,
@@ -19,6 +22,7 @@ import { estimateGroundLeg, searchFlights } from "@/services/flightService";
 import { distanceKm, geocodeCity } from "@/services/geocodeService";
 import { estimateNightlyRate, searchHotel } from "@/services/hotelService";
 import { getStopWeather } from "@/services/weatherService";
+
 
 /**
  * The Astera optimisation engine.
@@ -151,48 +155,115 @@ function splitNights(total: number, stops: number, fewerChanges: boolean) {
   return nights;
 }
 
-function buildItinerary(stops: TripStop[], legs: RouteLeg[], startDate: string): DayPlan[] {
+type Highlight = CityRecord["highlights"][number];
+
+/** Extra day shapes used once a city's curated highlights are exhausted. */
+function fallbackHighlights(stop: TripStop, index: number): Highlight[] {
+  const dayTrips = stop.dayTrips ?? [];
+  const trip = dayTrips[index % Math.max(1, dayTrips.length)];
+  const templates: Highlight[] = [
+    {
+      morning: `A slower start in ${stop.name} — coffee where the neighbourhood goes, then the streets behind the main square`,
+      afternoon: trip
+        ? `Half-day out to ${trip}, back in time for the evening`
+        : `The residential side of ${stop.name}, away from the centre`,
+      evening: `An unhurried dinner and a walk back the long way through ${stop.name}`,
+      restaurant: `A neighbourhood table locals book in ${stop.name}`,
+      rainy: `Trade the walking for ${stop.name}'s best indoor collection`,
+    },
+    {
+      morning: `The morning market in ${stop.name}, then breakfast standing at the counter`,
+      afternoon: `Independent shops, a bookshop and a long sit in a park in ${stop.name}`,
+      evening: `Sunset from the highest point you can walk to in ${stop.name}`,
+      restaurant: `A wine bar with a short, seasonal menu in ${stop.name}`,
+      rainy: `A thermal bath, cinema or covered market in ${stop.name}`,
+    },
+    {
+      morning: `A guided two hours on the history of ${stop.name}, kept short on purpose`,
+      afternoon: `Water, green space or a viewpoint just outside ${stop.name}`,
+      evening: `Live music somewhere small in ${stop.name}`,
+      restaurant: `The oldest still-good dining room in ${stop.name}`,
+      rainy: `Gallery-hop three small spaces in ${stop.name}`,
+    },
+  ];
+  return templates;
+}
+
+
+/**
+ * One day plan per night, with nothing repeated anywhere in the trip.
+ *
+ * A shared `ExperienceRegistry` spans every city, so the same museum, walk or
+ * restaurant cannot resurface on day 7 under a slightly different wording.
+ */
+function buildItinerary(stops: TripStop[], legs: RouteLeg[]): DayPlan[] {
+  const registry = new ExperienceRegistry();
   const plans: DayPlan[] = [];
-  let day = 1;
+
   stops.forEach((stop, stopIndex) => {
     const record = CITY_BY_ID.get(stop.id);
-    const highlights = record?.highlights ?? [];
+    const curated = record?.highlights ?? [];
+
     for (let n = 0; n < stop.nights; n += 1) {
-      const highlight = highlights[n % Math.max(1, highlights.length)] ?? {
-        morning: `Slow start and a wander through ${stop.name}`,
-        afternoon: `Neighbourhood walk and a local market in ${stop.name}`,
-        evening: `Dinner in the old quarter of ${stop.name}`,
-        restaurant: "A well-rated neighbourhood table",
-        rainy: "Swap the walking for the city's main museum",
-      };
+      const pool = [...curated, ...fallbackHighlights(stop, n)];
+
+      // First option whose morning anchor has not been used anywhere yet.
+      let highlight =
+        pool.find((candidate) => !registry.has("activity", { name: candidate.morning })) ??
+        pool[n % Math.max(1, pool.length)];
+
+      // Guarantee an unrepeated anchor even if every option collided.
+      if (registry.has("activity", { name: highlight.morning })) {
+        highlight = {
+          ...highlight,
+          morning: `Day ${plans.length + 1} in ${stop.name}: revisit the corner you liked most, at a different hour`,
+        };
+      }
+
+      registry.add("activity", { name: highlight.morning });
+
+      const afternoon = registry.add("activity", { name: highlight.afternoon })
+        ? highlight.afternoon
+        : `Free hours in ${stop.name} — the optimiser leaves this one open on purpose`;
+
+      const evening = registry.add("activity", { name: highlight.evening })
+        ? highlight.evening
+        : `A quiet evening near your stay in ${stop.name}`;
+
+      const restaurant = registry.add("restaurant", { name: highlight.restaurant })
+        ? highlight.restaurant
+        : `Another well-rated table in ${stop.name}, chosen on the day`;
+
       const arrivalLeg = n === 0 ? legs[stopIndex] : undefined;
+
       plans.push({
-        day,
+        day: plans.length + 1,
         city: stop.name,
         morning: highlight.morning,
-        afternoon: highlight.afternoon,
-        evening: highlight.evening,
-        restaurant: highlight.restaurant,
+        afternoon,
+        evening,
+        restaurant,
         rainyDayAlternative: highlight.rainy,
         transportNote: arrivalLeg
           ? `${arrivalLeg.mode} from ${arrivalLeg.from} — ${arrivalLeg.hours}h`
           : undefined,
       });
-      day += 1;
     }
   });
-  return plans.map((plan, index) => ({
-    ...plan,
-    day: index + 1,
-    transportNote: plan.transportNote,
-    city: plan.city,
-    morning: plan.morning,
-    afternoon: plan.afternoon,
-    evening: plan.evening,
-    restaurant: plan.restaurant,
-    rainyDayAlternative: plan.rainyDayAlternative,
-  }));
+
+  assertUniqueItinerary(
+    "itinerary",
+    plans.flatMap((plan) => [
+      { kind: "activity" as const, name: plan.morning, day: plan.day },
+      { kind: "activity" as const, name: plan.afternoon, day: plan.day },
+      { kind: "activity" as const, name: plan.evening, day: plan.day },
+      { kind: "restaurant" as const, name: plan.restaurant, day: plan.day },
+    ]),
+  );
+
+  return plans;
 }
+
 
 function packingFor(stops: TripStop[], prefs: TripPreferences) {
   const list = new Set<string>([
@@ -213,23 +284,191 @@ function packingFor(stops: TripStop[], prefs: TripPreferences) {
   return [...list];
 }
 
+const LUXURY_STEP_DOWN: Record<TripPreferences["luxuryLevel"], TripPreferences["luxuryLevel"] | null> =
+  {
+    luxury: "boutique",
+    boutique: "midscale",
+    midscale: "hostel",
+    hostel: null,
+  };
+
+const LUXURY_LABEL: Record<TripPreferences["luxuryLevel"], string> = {
+  luxury: "luxury",
+  boutique: "boutique",
+  midscale: "midscale",
+  hostel: "hostel and guesthouse",
+};
+
+/**
+ * "Stretch your budget" suggestions.
+ *
+ * Each one is costed locally from the route that already exists — no second
+ * optimiser run, no network — so the traveller sees the new total the instant
+ * they toggle it.
+ */
+function buildStretchOptions(context: {
+  prefs: TripPreferences;
+  stops: TripStop[];
+  legs: RouteLeg[];
+  cost: number;
+  costBreakdown: CostBreakdown;
+  totalNights: number;
+}): BudgetStretchOption[] {
+  const { prefs, stops, legs, costBreakdown, totalNights } = context;
+  const options: BudgetStretchOption[] = [];
+
+  // 1. Step down one accommodation tier.
+  const cheaperTier = LUXURY_STEP_DOWN[prefs.luxuryLevel];
+  if (cheaperTier) {
+    const rooms = Math.ceil(prefs.travellers / 2);
+    const newAccommodation = stops.reduce(
+      (total, stop) =>
+        total + estimateNightlyRate(stop.id, cheaperTier).nightly * stop.nights * rooms,
+      0,
+    );
+    const delta = Math.round(newAccommodation - costBreakdown.accommodation);
+    if (delta < -20) {
+      options.push({
+        id: "downgrade-stay",
+        label: `Drop to ${LUXURY_LABEL[cheaperTier]} stays`,
+        detail: `Same cities, same nights, ${LUXURY_LABEL[cheaperTier]} rooms instead of ${LUXURY_LABEL[prefs.luxuryLevel]}.`,
+        costDelta: delta,
+        tradeoff: "Less polish at check-in — the locations stay central.",
+      });
+    }
+  }
+
+  // 2. Replace the most expensive flight with rail.
+  const flight = [...legs].filter((leg) => leg.mode === "flight").sort((a, b) => b.cost - a.cost)[0];
+  if (flight) {
+    const railCost = Math.round(flight.cost * 0.62);
+    options.push({
+      id: "rail-swap",
+      label: `Take the train ${flight.from} → ${flight.to}`,
+      detail: `Rail instead of flying the ${flight.from}–${flight.to} leg, city centre to city centre.`,
+      costDelta: railCost - Math.round(flight.cost),
+      tradeoff: `Adds roughly ${Math.max(1, Math.round(flight.hours * 0.8))}h of travel, removes two airport transfers.`,
+    });
+  }
+
+  // 3. Cut the shortest stop and give those nights to the others.
+  if (stops.length > 2) {
+    const shortest = [...stops].sort((a, b) => a.nights - b.nights)[0];
+    const rooms = Math.ceil(prefs.travellers / 2);
+    const nightly = estimateNightlyRate(shortest.id, prefs.luxuryLevel).nightly;
+    const city = CITY_BY_ID.get(shortest.id);
+    const dailySpend = (city?.dailyIndex ?? 80) * 0.78 * prefs.travellers;
+    const legCost = legs.find((leg) => leg.to === shortest.name)?.cost ?? 0;
+    const delta = -Math.round(nightly * shortest.nights * rooms * 0.35 + legCost * 0.5);
+    options.push({
+      id: "drop-stop",
+      label: `Skip ${shortest.name}, spread the nights`,
+      detail: `Three cities instead of four. Those ${shortest.nights} nights go to the stops you rated highest.`,
+      costDelta: delta,
+      tradeoff: `You lose ${shortest.name}, but save a hotel change and about ${Math.round(dailySpend / 100) / 10}k steps with luggage.`,
+    });
+  }
+
+  // 4. Add two more nights at the strongest stop.
+  const anchor = stops[0];
+  if (anchor && totalNights < 21) {
+    const rooms = Math.ceil(prefs.travellers / 2);
+    const nightly = estimateNightlyRate(anchor.id, prefs.luxuryLevel).nightly;
+    const city = CITY_BY_ID.get(anchor.id);
+    const daily = (city?.dailyIndex ?? 80) * 0.78 * prefs.travellers;
+    options.push({
+      id: "extend",
+      label: `Add 2 nights in ${anchor.name}`,
+      detail: "No extra transport — you are already there, and the flights do not change.",
+      costDelta: Math.round((nightly * rooms + daily) * 2),
+      tradeoff: "Costs more, but the per-day cost of a longer stay is the lowest of any change here.",
+    });
+  }
+
+  // 5. Eat the way the city actually eats.
+  if (costBreakdown.food > 150) {
+    options.push({
+      id: "eat-local",
+      label: "Swap two restaurant dinners a week for markets",
+      detail: "Set menus at lunch, market dinners in the evening — the pattern locals actually use.",
+      costDelta: -Math.round(costBreakdown.food * 0.18),
+      tradeoff: "Fewer booked tables, more standing at counters.",
+    });
+  }
+
+  return options;
+}
+
+
+
 export interface OptimiseInput {
   preferences: TripPreferences;
   /** Optional signal so a long recalculation can be cancelled by the UI. */
   signal?: AbortSignal;
 }
 
-async function buildRoute(
+const DEFAULT_TRIP_NIGHTS = 7;
+
+/**
+ * Repairs a preference set before the engine touches it.
+ *
+ * Dates arriving from local storage, a URL or a half-filled form are routinely
+ * empty, reversed or unparseable. Rather than fail — or silently plan a trip in
+ * 1970 — we clamp everything into a sane, plannable range.
+ */
+export function normalisePreferences(input: Partial<TripPreferences>): TripPreferences {
+  const base = { ...SAMPLE_PREFERENCES, ...input };
+
+  let start = toIsoDate(base.startDate);
+  let end = toIsoDate(base.endDate);
+
+  // A start in the past is fine for a saved trip, but an unusable one is not.
+  if (!start) start = addDaysIso(todayIso(), 30);
+  if (!end || nightsBetweenSafe(start, end) === null) {
+    end = addDaysIso(start, DEFAULT_TRIP_NIGHTS);
+  }
+  // Reversed dates: trust the earlier one and rebuild the span.
+  if (new Date(end!).getTime() <= new Date(start!).getTime()) {
+    end = addDaysIso(start, DEFAULT_TRIP_NIGHTS);
+  }
+
+  const nights = nightsBetweenSafe(start, end) ?? DEFAULT_TRIP_NIGHTS;
+  // Beyond a month the combination space stops being meaningful for an MVP.
+  if (nights > 30) end = addDaysIso(start, 30);
+
+  return {
+    ...base,
+    startCity: (base.startCity || "").trim() || SAMPLE_PREFERENCES.startCity,
+    endCity: (base.endCity || "").trim() || (base.startCity || "").trim() || SAMPLE_PREFERENCES.startCity,
+    startDate: start!,
+    endDate: end!,
+    travellers: clamp(Math.round(base.travellers) || 2, 1, 12),
+    budget: clamp(Math.round(base.budget) || 1500, 200, 100_000),
+    maxTravelHours: clamp(Math.round(base.maxTravelHours) || 12, 2, 60),
+    interests: base.interests ?? [],
+    activities: base.activities ?? [],
+    diets: base.diets ?? [],
+    notes: base.notes ?? "",
+  };
+}
+
+/** How many nights the engine is planning for. */
+export const tripNights = (prefs: TripPreferences) =>
+  nightsBetweenSafe(prefs.startDate, prefs.endDate) ?? DEFAULT_TRIP_NIGHTS;
+
+/** Pure, synchronous city selection — no network, so it can be run up front. */
+function selectCities(
   strategy: Strategy,
   prefs: TripPreferences,
   startPoint: { lat: number; lon: number; name: string },
   endPoint: { lat: number; lon: number; name: string },
   exclude: Set<string>,
-): Promise<TripRoute> {
-  const totalNights = nightsBetween(prefs.startDate, prefs.endDate);
+): CityRecord[] {
+  const totalNights = tripNights(prefs);
   const stopCount = Math.min(4, Math.max(2, strategy.stopCount(totalNights)));
 
-  const candidates = CITIES.filter((city) => !exclude.has(city.id))
+  const pool = CITIES.filter((city) => !exclude.has(city.id));
+  const candidates = (pool.length >= stopCount ? pool : CITIES)
     .map((city) => {
       const fit = interestFit(city, prefs.interests);
       const detour = distanceKm(startPoint, city) + distanceKm(city, endPoint);
@@ -241,12 +480,26 @@ async function buildRoute(
         value * strategy.weights.value +
         efficiency * strategy.weights.efficiency +
         discovery * strategy.weights.discovery;
-      return { city, score, fit, efficiency, value, discovery };
+      return { city, score };
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score || a.city.name.localeCompare(b.city.name));
 
-  const chosen = orderStops(startPoint, candidates.slice(0, stopCount).map((c) => c.city));
+  return orderStops(
+    startPoint,
+    candidates.slice(0, stopCount).map((entry) => entry.city),
+  );
+}
+
+async function buildRoute(
+  strategy: Strategy,
+  prefs: TripPreferences,
+  startPoint: { lat: number; lon: number; name: string },
+  endPoint: { lat: number; lon: number; name: string },
+  chosen: CityRecord[],
+): Promise<TripRoute> {
+  const totalNights = tripNights(prefs);
   const nightsPerStop = splitNights(totalNights, chosen.length, prefs.fewerHotelChanges);
+
 
   // --- transport legs -------------------------------------------------
   const waypoints = [
@@ -362,12 +615,14 @@ async function buildRoute(
     ),
   );
   const budgetRatio = cost / Math.max(1, prefs.budget);
+  const budgetScore = clamp(118 - budgetRatio * 100);
+  const WEIGHTS = { experience: 0.34, budget: 0.32, efficiency: 0.2, weather: 0.14 } as const;
   const overall = clamp(
     Math.round(
-      experience * 0.34 +
-        efficiency * 0.2 +
-        weatherScore * 0.14 +
-        clamp(118 - budgetRatio * 100) * 0.32,
+      experience * WEIGHTS.experience +
+        efficiency * WEIGHTS.efficiency +
+        weatherScore * WEIGHTS.weather +
+        budgetScore * WEIGHTS.budget,
     ),
   );
 
@@ -379,6 +634,46 @@ async function buildRoute(
     weather: weatherScore,
     efficiency,
   };
+
+  // Every number above, restated in language a traveller can argue with.
+  const scoreFactors: ScoreFactor[] = [
+    {
+      key: "experience",
+      label: "Interest fit",
+      value: experience,
+      weight: WEIGHTS.experience,
+      explanation: prefs.interests.length
+        ? `${chosen.map((c) => c.name).join(", ")} average ${experience}/100 against your ${prefs.interests.join(", ")} interests.`
+        : `No interests were set, so this is the all-round strength of ${chosen.map((c) => c.name).join(", ")}.`,
+    },
+    {
+      key: "budget",
+      label: "Budget efficiency",
+      value: Math.round(budgetScore),
+      weight: WEIGHTS.budget,
+      explanation:
+        cost <= prefs.budget
+          ? `Uses ${Math.round(budgetRatio * 100)}% of your budget, so ${Math.round(100 - budgetRatio * 100)}% stays unspent.`
+          : `Runs ${Math.round((budgetRatio - 1) * 100)}% over budget as planned — the suggestions below close that gap.`,
+    },
+    {
+      key: "efficiency",
+      label: "Time on the ground",
+      value: efficiency,
+      weight: WEIGHTS.efficiency,
+      explanation: `${journeyHours}h of the trip is spent moving, against the ${prefs.maxTravelHours}h you allowed.`,
+    },
+    {
+      key: "weather",
+      label: "Weather outlook",
+      value: weatherScore,
+      weight: WEIGHTS.weather,
+      explanation: `Average rain chance across the stops is ${Math.round(
+        stops.reduce((total, stop) => total + stop.weather.rainChance, 0) / stops.length,
+      )}% for your dates.`,
+    },
+  ];
+
 
   // --- narrative -------------------------------------------------------
   const gemNames = chosen.filter((c) => c.hiddenGem).map((c) => c.name);
@@ -412,7 +707,16 @@ async function buildRoute(
   const transportRecommendation =
     Object.entries(dominantMode).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "train";
 
-  const itinerary = buildItinerary(stops, legs, prefs.startDate);
+  const itinerary = buildItinerary(stops, legs);
+
+  const stretchOptions = buildStretchOptions({
+    prefs,
+    stops,
+    legs,
+    cost,
+    costBreakdown,
+    totalNights,
+  });
 
   return {
     id: `${strategy.id}-${chosen.map((c) => c.id).join("-")}`,
@@ -423,6 +727,9 @@ async function buildRoute(
     stops,
     legs,
     scores,
+    scoreFactors,
+    stretchOptions,
+
     cost,
     costBreakdown,
     budgetLeft: Math.round(prefs.budget - cost),
@@ -442,31 +749,74 @@ async function buildRoute(
   };
 }
 
-/** Generates four distinct optimised routes for a set of preferences. */
+/** Hard ceiling on one optimisation run, so the UI can never hang. */
+const OPTIMISE_TIMEOUT_MS = 14_000;
+
+/**
+ * Generates four distinct optimised routes for a set of preferences.
+ *
+ * City selection is synchronous and runs first, which lets all four routes be
+ * priced in parallel rather than one after another — the difference between a
+ * 3-second wait and a 20-second one on a slow connection.
+ */
 export async function optimiseTrip(input: OptimiseInput): Promise<TripRoute[]> {
-  const preferences: TripPreferences = {
+  const preferences: TripPreferences = normalisePreferences({
     ...input.preferences,
     interests: effectiveInterests(input.preferences),
-  };
+  });
 
   const [start, end] = await Promise.all([
-    geocodeCity(preferences.startCity || "London"),
-    geocodeCity(preferences.endCity || preferences.startCity || "London"),
+    geocodeCity(preferences.startCity),
+    geocodeCity(preferences.endCity || preferences.startCity),
   ]);
 
   const startPoint = { lat: start.lat, lon: start.lon, name: start.name };
   const endPoint = { lat: end.lat, lon: end.lon, name: end.name };
 
+  // Pick every strategy's cities up front so the four routes stay distinct…
   const used = new Set<string>();
-  const routes: TripRoute[] = [];
-  for (const strategy of STRATEGIES) {
-    const route = await buildRoute(strategy, preferences, startPoint, endPoint, used);
+  const plans = STRATEGIES.map((strategy) => {
+    const chosen = selectCities(strategy, preferences, startPoint, endPoint, used);
+    chosen.slice(0, 2).forEach((city) => used.add(city.id));
+    return { strategy, chosen };
+  });
 
-    route.stops.slice(0, 2).forEach((stop) => used.add(stop.id));
-    routes.push(route);
-  }
+  // …then price them all at once.
+  const settled = await Promise.allSettled(
+    plans.map(({ strategy, chosen }) =>
+      buildRoute(strategy, preferences, startPoint, endPoint, chosen),
+    ),
+  );
+
+  const routes = settled
+    .filter((result): result is PromiseFulfilledResult<TripRoute> => result.status === "fulfilled")
+    .map((result) => result.value);
+
   return routes.sort((a, b) => b.scores.overall - a.scores.overall);
 }
+
+/**
+ * `optimiseTrip` with a hard deadline. Resolves to whatever finished in time
+ * rather than leaving the results page spinning forever.
+ */
+export async function optimiseTripWithDeadline(
+  input: OptimiseInput,
+  timeoutMs = OPTIMISE_TIMEOUT_MS,
+): Promise<{ routes: TripRoute[]; timedOut: boolean }> {
+  let timer: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<"timeout">((resolve) => {
+    timer = setTimeout(() => resolve("timeout"), timeoutMs);
+  });
+
+  try {
+    const outcome = await Promise.race([optimiseTrip(input), deadline]);
+    if (outcome === "timeout") return { routes: [], timedOut: true };
+    return { routes: outcome, timedOut: false };
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 
 const GOAL_LABEL: Record<OptimiseGoal, string> = {
   "spend-less": "Spend less",
@@ -515,6 +865,7 @@ export async function optimiseFurther(
   }
 
   const [candidate] = await optimiseTrip({ preferences: prefs });
+  if (!candidate) return route;
   return {
     ...candidate,
     title: `${route.title} · ${GOAL_LABEL[goal]}`,
@@ -522,11 +873,12 @@ export async function optimiseFurther(
   };
 }
 
+/** Default planner state. Dates sit far enough out to be bookable. */
 export const SAMPLE_PREFERENCES: TripPreferences = {
   startCity: "London",
   endCity: "London",
-  startDate: addDays(new Date().toISOString().slice(0, 10), 45),
-  endDate: addDays(new Date().toISOString().slice(0, 10), 55),
+  startDate: addDays(todayIso(), 45),
+  endDate: addDays(todayIso(), 55),
   travellers: 2,
   budget: 2400,
   currency: "EUR",
@@ -541,4 +893,37 @@ export const SAMPLE_PREFERENCES: TripPreferences = {
   activities: ["nature", "photography", "hidden-gems"],
   notes: "",
 };
+
+/**
+ * The demo profile behind "Try a sample trip".
+ *
+ * Fully specified and independent of anything in local storage, so the sample
+ * renders identically for every visitor and can never inherit a half-finished
+ * draft from a previous session.
+ */
+export const SAMPLE_TRIP_PREFERENCES: TripPreferences = {
+  ...SAMPLE_PREFERENCES,
+  startCity: "London",
+  endCity: "London",
+  startDate: addDays(todayIso(), 45),
+  endDate: addDays(todayIso(), 55),
+  travellers: 2,
+  budget: 5200,
+  currency: "EUR",
+  interests: ["food", "nature", "photography", "history"],
+  transport: "mixed",
+  maxTravelHours: 14,
+  avoidFlights: false,
+  fewerHotelChanges: false,
+  luxuryLevel: "boutique",
+  diets: ["local-cuisine", "seafood"],
+  travelStyle: "couple",
+  activities: ["nature", "photography", "hidden-gems", "architecture"],
+  notes: "Two of us, ten nights, no early flights. We'd rather eat well than stay somewhere fancy.",
+};
+
+/** One-line description of the sample, shown above the results. */
+export const SAMPLE_SUMMARY =
+  "Two travellers · 10 nights from London · €5,200 all in · food, nature and photography · boutique stays, no early starts";
+
 

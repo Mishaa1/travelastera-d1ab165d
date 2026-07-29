@@ -1,3 +1,11 @@
+import {
+  addDaysIso,
+  formatDateSafe,
+  formatShortDateSafe,
+  nightsBetweenSafe,
+  todayIso as todayIsoSafe,
+} from "@/lib/date";
+
 export const formatCurrency = (
   value: number,
   currency: "EUR" | "USD" | "GBP" = "EUR",
@@ -7,32 +15,26 @@ export const formatCurrency = (
     style: "currency",
     currency,
     maximumFractionDigits,
-  }).format(value);
+  }).format(Number.isFinite(value) ? value : 0);
 
 export const formatHours = (hours: number) => {
+  if (!Number.isFinite(hours) || hours < 0) return "—";
   const whole = Math.floor(hours);
   const minutes = Math.round((hours - whole) * 60);
   return minutes ? `${whole}h ${minutes}m` : `${whole}h`;
 };
 
-export const formatDate = (iso: string) =>
-  iso
-    ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
-    : "—";
+/** Never renders 1970 — unparseable input becomes an em dash. */
+export const formatDate = (iso: unknown) => formatDateSafe(iso);
 
-export const formatShortDate = (iso: string) =>
-  iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—";
+export const formatShortDate = (iso: unknown) => formatShortDateSafe(iso);
 
-export const nightsBetween = (start: string, end: string) => {
-  if (!start || !end) return 7;
-  const ms = new Date(end).getTime() - new Date(start).getTime();
-  return Math.max(2, Math.round(ms / 86_400_000));
-};
+/** Nights between two dates, defaulting to a sensible 7 when unknown. */
+export const nightsBetween = (start: unknown, end: unknown) => nightsBetweenSafe(start, end) ?? 7;
 
-export const addDays = (iso: string, days: number) => {
-  const date = new Date(iso);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-};
+/** Adds days to an ISO date, falling back to today's date when input is bad. */
+export const addDays = (iso: unknown, days: number) => addDaysIso(iso, days) ?? todayIsoSafe();
 
-export const todayIso = () => new Date().toISOString().slice(0, 10);
+export const todayIso = todayIsoSafe;
+
+export { formatDateRange } from "@/lib/date";

@@ -1,11 +1,14 @@
 import { CITIES } from "@/data/cities";
+import { CITY_GAZETTEER, COUNTRY_BY_CODE } from "@/data/locations";
+import { normaliseText } from "@/lib/dedupe";
 
 /**
  * Search index behind every Astera location field.
  *
- * Cities, their primary airports and countries live in one flat list so a
- * single component can power destination, airport, city and country search.
- * Swap `PLACES` for a live gazetteer later — the shape is intentionally thin.
+ * Cities, their airports and countries live in one flat list so a single
+ * component can power destination, airport, city and country search. The
+ * optimiser's own `CITIES` come first (they carry scoring data); the broader
+ * offline gazetteer fills in everywhere else a traveller might start from.
  */
 
 export type PlaceKind = "city" | "airport" | "country";
@@ -24,6 +27,8 @@ export interface PlaceOption {
   lat?: number;
   lon?: number;
   popular?: boolean;
+  /** True when the optimiser can plan a stay here, not just fly from it. */
+  plannable?: boolean;
 }
 
 /** Regional indicator flag from an ISO-3166 alpha-2 code. */
@@ -38,6 +43,7 @@ export function flagEmoji(countryCode: string): string {
 }
 
 const COUNTRY_NAMES: Record<string, string> = {
+  ...COUNTRY_BY_CODE,
   PT: "Portugal",
   ES: "Spain",
   FR: "France",
@@ -62,7 +68,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   SE: "Sweden",
 };
 
-/** Primary airport per known city. Prototype reference data. */
+/** Primary airport per optimiser city. Prototype reference data. */
 const AIRPORTS: Record<string, { code: string; name: string }> = {
   lisbon: { code: "LIS", name: "Humberto Delgado" },
   porto: { code: "OPO", name: "Francisco Sá Carneiro" },
@@ -92,28 +98,6 @@ const AIRPORTS: Record<string, { code: string; name: string }> = {
   bologna: { code: "BLQ", name: "Guglielmo Marconi" },
 };
 
-/** Common departure hubs that are not optimiser destinations. */
-const ORIGIN_HUBS: {
-  id: string;
-  name: string;
-  countryCode: string;
-  code: string;
-  airport: string;
-  lat: number;
-  lon: number;
-}[] = [
-  { id: "london", name: "London", countryCode: "GB", code: "LHR", airport: "Heathrow", lat: 51.5072, lon: -0.1276 },
-  { id: "manchester", name: "Manchester", countryCode: "GB", code: "MAN", airport: "Manchester", lat: 53.4808, lon: -2.2426 },
-  { id: "dublin", name: "Dublin", countryCode: "IE", code: "DUB", airport: "Dublin", lat: 53.3498, lon: -6.2603 },
-  { id: "berlin", name: "Berlin", countryCode: "DE", code: "BER", airport: "Brandenburg", lat: 52.52, lon: 13.405 },
-  { id: "munich", name: "Munich", countryCode: "DE", code: "MUC", airport: "Franz Josef Strauss", lat: 48.1372, lon: 11.5756 },
-  { id: "madrid", name: "Madrid", countryCode: "ES", code: "MAD", airport: "Barajas", lat: 40.4168, lon: -3.7038 },
-  { id: "milan", name: "Milan", countryCode: "IT", code: "MXP", airport: "Malpensa", lat: 45.4642, lon: 9.19 },
-  { id: "warsaw", name: "Warsaw", countryCode: "PL", code: "WAW", airport: "Chopin", lat: 52.2297, lon: 21.0122 },
-  { id: "brussels", name: "Brussels", countryCode: "BE", code: "BRU", airport: "Zaventem", lat: 50.8476, lon: 4.3572 },
-  { id: "stockholm", name: "Stockholm", countryCode: "SE", code: "ARN", airport: "Arlanda", lat: 59.3293, lon: 18.0686 },
-];
-
 const POPULAR_IDS = new Set([
   "city-lisbon",
   "city-barcelona",
@@ -125,11 +109,18 @@ const POPULAR_IDS = new Set([
   "city-athens",
 ]);
 
+/** URL/ID-safe slug for a city name. */
+const slugify = (value: string) => normaliseText(value).replace(/\s+/g, "-");
+
 function buildPlaces(): PlaceOption[] {
   const list: PlaceOption[] = [];
+  const seenCities = new Set<string>();
+  const seenAirports = new Set<string>();
 
+  // 1. Optimiser cities — these can be planned into a route.
   for (const city of CITIES) {
     const airport = AIRPORTS[city.id];
+    seenCities.add(normaliseText(city.name));
     list.push({
       id: `city-${city.id}`,
       kind: "city",
@@ -142,10 +133,12 @@ function buildPlaces(): PlaceOption[] {
       lat: city.lat,
       lon: city.lon,
       popular: POPULAR_IDS.has(`city-${city.id}`),
+      plannable: true,
     });
-    if (airport) {
+    if (airport && !seenAirports.has(airport.code)) {
+      seenAirports.add(airport.code);
       list.push({
-        id: `air-${city.id}`,
+        id: `air-${airport.code}`,
         kind: "airport",
         value: city.name,
         name: `${airport.name} Airport`,
@@ -159,35 +152,44 @@ function buildPlaces(): PlaceOption[] {
     }
   }
 
-  for (const hub of ORIGIN_HUBS) {
-    const country = COUNTRY_NAMES[hub.countryCode] ?? hub.countryCode;
-    list.push({
-      id: `city-${hub.id}`,
-      kind: "city",
-      value: hub.name,
-      name: hub.name,
-      subtitle: country,
-      country,
-      countryCode: hub.countryCode,
-      code: hub.code,
-      lat: hub.lat,
-      lon: hub.lon,
-      popular: ["london", "dublin", "berlin", "madrid"].includes(hub.id),
-    });
-    list.push({
-      id: `air-${hub.id}`,
-      kind: "airport",
-      value: hub.name,
-      name: `${hub.airport} Airport`,
-      subtitle: `${hub.name}, ${country}`,
-      country,
-      countryCode: hub.countryCode,
-      code: hub.code,
-      lat: hub.lat,
-      lon: hub.lon,
-    });
+  // 2. The wider offline gazetteer — origins, hubs and everything else.
+  for (const [name, country, countryCode, lat, lon, airports] of CITY_GAZETTEER) {
+    const key = normaliseText(name);
+    if (!seenCities.has(key)) {
+      seenCities.add(key);
+      list.push({
+        id: `city-${slugify(name)}`,
+        kind: "city",
+        value: name,
+        name,
+        subtitle: country,
+        country,
+        countryCode,
+        code: airports[0]?.[0],
+        lat,
+        lon,
+        popular: ["London", "Paris", "Rome", "Barcelona", "Amsterdam", "Istanbul"].includes(name),
+      });
+    }
+    for (const [code, airportName] of airports) {
+      if (seenAirports.has(code)) continue;
+      seenAirports.add(code);
+      list.push({
+        id: `air-${code}`,
+        kind: "airport",
+        value: name,
+        name: airportName,
+        subtitle: `${name}, ${country}`,
+        country,
+        countryCode,
+        code,
+        lat,
+        lon,
+      });
+    }
   }
 
+  // 3. Countries.
   const countryCodes = new Set(list.map((place) => place.countryCode));
   for (const code of countryCodes) {
     const name = COUNTRY_NAMES[code];
@@ -213,25 +215,45 @@ export const PLACE_BY_ID = new Map(PLACES.map((place) => [place.id, place]));
 
 export const POPULAR_PLACES = PLACES.filter((place) => place.popular);
 
+/** Fast lookup by IATA code, e.g. "LHR". */
+export const PLACE_BY_CODE = new Map(
+  PLACES.filter((place) => place.kind === "airport" && place.code).map((place) => [
+    place.code!.toUpperCase(),
+    place,
+  ]),
+);
+
 const KIND_WEIGHT: Record<PlaceKind, number> = { city: 0, airport: 1, country: 2 };
 
-/** Ranked fuzzy-ish search across cities, airports and countries. */
+/** Pre-computed, accent-free haystacks so search stays instant. */
+const INDEX = PLACES.map((place) => ({
+  place,
+  name: normaliseText(place.name),
+  value: normaliseText(place.value),
+  country: normaliseText(place.country),
+  code: (place.code ?? "").toLowerCase(),
+}));
+
+/** Ranked, accent-insensitive search across cities, airports and countries. */
 export function searchPlaces(query: string, limit = 8): PlaceOption[] {
-  const q = query.trim().toLowerCase();
+  const q = normaliseText(query);
   if (!q) return POPULAR_PLACES.slice(0, limit);
 
-  return PLACES.map((place) => {
-    const name = place.name.toLowerCase();
-    const country = place.country.toLowerCase();
-    const code = place.code?.toLowerCase() ?? "";
+  return INDEX.map((entry) => {
     let score = -1;
-    if (code && code === q) score = 100;
-    else if (name.startsWith(q)) score = 90;
-    else if (code.startsWith(q)) score = 80;
-    else if (name.includes(q)) score = 60;
-    else if (country.startsWith(q)) score = 50;
-    else if (country.includes(q)) score = 30;
-    return { place, score };
+    if (entry.code && entry.code === q) score = 100;
+    else if (entry.name === q || entry.value === q) score = 95;
+    else if (entry.name.startsWith(q)) score = 90;
+    else if (entry.value.startsWith(q)) score = 85;
+    else if (entry.code.startsWith(q)) score = 80;
+    else if (entry.name.includes(` ${q}`)) score = 70;
+    else if (entry.name.includes(q)) score = 60;
+    else if (entry.country.startsWith(q)) score = 50;
+    else if (entry.country.includes(q)) score = 30;
+    // Plannable destinations edge ahead of pure origin hubs.
+    if (score >= 0 && entry.place.plannable) score += 3;
+    if (score >= 0 && entry.place.popular) score += 2;
+    return { place: entry.place, score };
   })
     .filter((item) => item.score >= 0)
     .sort(
@@ -249,4 +271,21 @@ export function suggestedPlaces(query: string, limit = 6): PlaceOption[] {
   const results = searchPlaces(query, limit);
   if (results.length >= 3) return results;
   return [...results, ...POPULAR_PLACES.filter((p) => !results.includes(p))].slice(0, limit);
+}
+
+/**
+ * Best-effort resolution of arbitrary free text to a known place.
+ * Accepts "LHR", "london", "London, United Kingdom".
+ */
+export function resolvePlace(input: string): PlaceOption | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  if (/^[a-z]{3}$/i.test(trimmed)) {
+    const byCode = PLACE_BY_CODE.get(trimmed.toUpperCase());
+    if (byCode) return byCode;
+  }
+  const head = normaliseText(trimmed.split(",")[0]);
+  const exact = INDEX.find((entry) => entry.name === head || entry.value === head);
+  if (exact) return exact.place;
+  return searchPlaces(trimmed, 1)[0] ?? null;
 }
