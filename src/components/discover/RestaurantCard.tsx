@@ -19,15 +19,15 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
   const wanted = preferences.diets ?? [];
 
   return (
-    <article className="card-lift flex gap-4 overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-soft">
-      <img
+    <article className="card-lift group flex gap-4 overflow-hidden rounded-3xl border border-border bg-card p-3 shadow-soft">
+      <ExperienceImage
         src={restaurant.image}
         alt={`${restaurant.name}, ${restaurant.cuisine} in ${restaurant.city}`}
         width={320}
         height={320}
-        loading="lazy"
-        className="h-28 w-28 shrink-0 rounded-2xl object-cover sm:h-32 sm:w-32"
+        ratioClassName="h-28 w-28 shrink-0 rounded-2xl sm:h-32 sm:w-32"
       />
+
 
       <div className="min-w-0 flex-1 space-y-2 py-1 pr-1">
         <div className="flex items-start justify-between gap-2">
