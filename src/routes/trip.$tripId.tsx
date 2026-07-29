@@ -96,7 +96,8 @@ function TripDetailPage() {
 
   return (
     <PageShell>
-      <header className="relative h-[52vh] min-h-80 overflow-hidden">
+      {/* Hero — more editorial prominence -------------------------------- */}
+      <header className="relative h-[62vh] min-h-96 overflow-hidden">
         <img
           src={route.image}
           alt={route.stops.map((stop) => stop.name).join(", ")}
@@ -104,29 +105,32 @@ function TripDetailPage() {
           height={1200}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-ink/30" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-5 pb-8 md:px-8 md:pb-12">
-          <Button asChild variant="glass" size="sm" className="mb-5">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/25" />
+        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-5 pb-10 md:px-8 md:pb-14">
+          <Button asChild variant="glass" size="sm" className="mb-6">
             <Link to="/results">
               <ArrowLeft aria-hidden />
               All routes
             </Link>
           </Button>
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6">
             <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-widest text-primary-foreground/75 uppercase">
+              <p className="text-[11px] font-semibold tracking-[0.2em] text-primary-foreground/70 uppercase">
                 {route.countries.join(" · ")}
               </p>
-              <h1 className="mt-2 font-display text-[clamp(2rem,5.5vw,3.6rem)] leading-[1.02] font-semibold text-primary-foreground">
+              <h1 className="mt-3 font-display text-[clamp(2.25rem,5.8vw,4rem)] leading-[0.98] font-medium tracking-[-0.02em] text-primary-foreground">
                 {route.stops.map((stop) => stop.name).join(" → ")}
               </h1>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-primary-foreground/80">
+                {route.tagline}
+              </p>
             </div>
-            <ScoreRing value={route.scores.overall} size={80} className="shrink-0" />
+            <ScoreRing value={route.scores.overall} size={88} className="shrink-0" />
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-5 py-12 md:px-8 md:py-16">
+      <div className="mx-auto max-w-6xl px-5 py-14 md:px-8 md:py-20">
         <div className="flex flex-wrap items-center gap-3">
           <DataBadge quality={route.quality} showProvider />
           <Button
@@ -139,7 +143,7 @@ function TripDetailPage() {
           </Button>
         </div>
 
-        <dl className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Estimated cost" value={route.cost} currency={currency} />
           <Stat
             label={route.budgetLeft < 0 ? "Over budget" : "Budget left"}
@@ -147,49 +151,71 @@ function TripDetailPage() {
             currency={currency}
             tone={route.budgetLeft < 0 ? "warn" : "good"}
           />
-          <div className="rounded-3xl border border-border bg-card p-5">
-            <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+            <dt className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
               Time in transit
             </dt>
-            <dd className="mt-2 font-display text-2xl font-semibold">
+            <dd className="mt-2 font-display text-2xl font-medium tracking-[-0.01em]">
               {formatHours(route.journeyHours)}
             </dd>
           </div>
-          <div className="rounded-3xl border border-border bg-card p-5">
-            <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+            <dt className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
               Transport
             </dt>
             <dd className="mt-2 text-sm leading-snug">{route.transportRecommendation}</dd>
           </div>
         </dl>
 
-        {/* Why this route -------------------------------------------------- */}
-        <Reveal className="mt-12 rounded-4xl border border-primary/20 bg-card p-6 shadow-soft md:p-9">
-          <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <Brain className="h-5 w-5 text-teal" aria-hidden />
+        {/* Why this route — reasoning as elegant callouts ------------------- */}
+        <Reveal className="mt-16">
+          <p className="text-[11px] font-semibold tracking-[0.2em] text-teal uppercase">
+            The reasoning
+          </p>
+          <h2 className="mt-4 flex items-center gap-2.5 font-display text-3xl font-medium tracking-[-0.02em]">
+            <Brain className="h-6 w-6 text-teal" strokeWidth={1.6} aria-hidden />
             Why the engine chose this route
           </h2>
-          <ul className="mt-5 space-y-3">
-            {route.reasoning.map((reason) => (
-              <li key={reason} className="flex gap-3 text-sm leading-relaxed">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" aria-hidden />
-                <span className="text-muted-foreground">{reason}</span>
-              </li>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {route.reasoning.map((reason, index) => (
+              <div
+                key={reason}
+                className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-soft transition-colors duration-500 hover:border-primary/25"
+              >
+                <span className="font-display text-4xl font-medium tracking-[-0.02em] text-muted-foreground/25">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <p className="mt-3 text-[15px] leading-[1.65]">{reason}</p>
+              </div>
             ))}
-          </ul>
-          <div className="mt-7 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            <ScoreBar label="Experience" value={route.scores.experience} />
-            <ScoreBar label="Nature" value={route.scores.nature} tone="emerald" delay={0.05} />
-            <ScoreBar label="Food" value={route.scores.food} tone="sunset" delay={0.1} />
-            <ScoreBar label="Weather" value={route.scores.weather} tone="teal" delay={0.15} />
           </div>
-          <ScoreBreakdown
-            factors={route.scoreFactors ?? []}
-            overall={route.scores.overall}
-            className="mt-6"
-          />
-          <BudgetStretch route={route} className="mt-6" />
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8">
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                How you'll experience it
+              </p>
+              <div className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+                <ScoreBar label="Experience" value={route.scores.experience} />
+                <ScoreBar label="Nature" value={route.scores.nature} tone="emerald" delay={0.05} />
+                <ScoreBar label="Food" value={route.scores.food} tone="sunset" delay={0.1} />
+                <ScoreBar label="Weather" value={route.scores.weather} tone="teal" delay={0.15} />
+              </div>
+            </div>
+            <ScoreBreakdown
+              factors={route.scoreFactors ?? []}
+              overall={route.scores.overall}
+            />
+          </div>
         </Reveal>
+
+        {/* Stretch your budget — featured band --------------------------- */}
+        <Reveal className="mt-16">
+          <BudgetStretch route={route} />
+        </Reveal>
+
+
 
 
         {/* Map -------------------------------------------------------------- */}
