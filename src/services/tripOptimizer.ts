@@ -422,6 +422,14 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
   let start = toIsoDate(base.startDate);
   let end = toIsoDate(base.endDate);
 
+  // Flexible planning: a month plus a length is enough to build a concrete span.
+  if (base.dateMode === "flexible" && /^\d{4}-\d{2}$/.test(base.flexibleMonth ?? "")) {
+    const nights = clamp(Math.round(base.flexibleNights) || 7, 2, 30);
+    start = `${base.flexibleMonth}-08`;
+    end = addDaysIso(start, nights);
+  }
+
+
   // A start in the past is fine for a saved trip, but an unusable one is not.
   if (!start) start = addDaysIso(todayIso(), 30);
   if (!end || nightsBetweenSafe(start, end) === null) {
