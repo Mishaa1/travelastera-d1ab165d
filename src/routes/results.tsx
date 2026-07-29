@@ -264,6 +264,12 @@ function ResultsPage() {
           </div>
         )}
 
+        {!loading && best && !sample && (
+          <div className="mt-8">
+            <FlightOffers route={best} enabled={!best.preferences.avoidFlights} />
+          </div>
+        )}
+
 
         <AnimatePresence>
           {panelRoute && (
