@@ -121,12 +121,14 @@
     ),
     radial-gradient(100% 70% at 95% 10%, oklch(0.9 0.06 60 / 0.45) 0%, transparent 55%);
 
-  --shadow-float: 0 24px 60px -24px oklch(0.21 0.03 250 / 0.28);
-  --shadow-soft: 0 8px 24px -12px oklch(0.21 0.03 250 / 0.22);
-  --shadow-lift: 0 40px 80px -32px oklch(0.21 0.03 250 / 0.35);
+  --shadow-float: 0 30px 80px -32px oklch(0.21 0.03 250 / 0.22);
+  --shadow-soft: 0 1px 2px oklch(0.21 0.03 250 / 0.04), 0 12px 28px -18px oklch(0.21 0.03 250 / 0.18);
+  --shadow-lift: 0 40px 90px -40px oklch(0.21 0.03 250 / 0.32);
+  --shadow-hairline: 0 0 0 1px oklch(0.21 0.03 250 / 0.06);
 
   --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 
 .dark {
   --background: oklch(0.19 0.02 250);
@@ -235,16 +237,29 @@
 @utility card-lift {
   transition:
     transform 0.5s var(--ease-silk),
-    box-shadow 0.5s var(--ease-silk);
+    box-shadow 0.5s var(--ease-silk),
+    border-color 0.5s var(--ease-silk);
   &:hover {
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-lift);
+    border-color: color-mix(in oklab, var(--color-border) 40%, var(--color-primary) 12%);
   }
 }
 
 @utility hairline {
   border: 1px solid color-mix(in oklab, var(--color-border) 90%, transparent);
 }
+
+@utility surface-editorial {
+  background: color-mix(in oklab, var(--color-card) 94%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-border) 70%, transparent);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.6) inset, var(--shadow-soft);
+}
+
+@utility rule-soft {
+  border-top: 1px solid color-mix(in oklab, var(--color-border) 80%, transparent);
+}
+
 
 @keyframes safara-shimmer {
   100% {
