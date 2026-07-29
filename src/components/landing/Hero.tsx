@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useRef } from "react";
 
-import heroImage from "@/assets/hero-satellite.jpg";
+import heroImage from "@/assets/hero-satellite.png.asset.json";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
 import { TravelPaths } from "@/components/common/TravelPaths";
 import { Wordmark } from "@/components/layout/Wordmark";
