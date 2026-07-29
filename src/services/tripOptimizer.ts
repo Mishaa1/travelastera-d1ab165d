@@ -876,10 +876,14 @@ export async function optimiseFurther(
 /** Default planner state. Dates sit far enough out to be bookable. */
 export const SAMPLE_PREFERENCES: TripPreferences = {
   startCity: "London",
-  endCity: "London",
+  endCity: "",
   startDate: addDays(todayIso(), 45),
   endDate: addDays(todayIso(), 55),
+  dateMode: "exact",
+  flexibleMonth: addDays(todayIso(), 45).slice(0, 7),
+  flexibleNights: 10,
   travellers: 2,
+
   budget: 2400,
   currency: "EUR",
   interests: ["food", "nature", "photography"],
