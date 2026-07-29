@@ -37,7 +37,7 @@ export function Hero() {
       {/* Satellite backdrop -------------------------------------------------- */}
       <motion.div style={{ y: imageY }} className="absolute inset-0 -z-10">
         <img
-          src={heroImage}
+          src={heroImage.url}
           alt="Satellite view of Europe at night with glowing city lights and travel routes"
           width={1920}
           height={1200}
