@@ -445,10 +445,12 @@ function Stat({
   tone?: "neutral" | "good" | "warn";
 }) {
   return (
-    <div className="rounded-3xl border border-border bg-card p-5">
-      <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</dt>
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+      <dt className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+        {label}
+      </dt>
       <dd
-        className={`mt-2 font-display text-2xl font-semibold tabular-nums ${
+        className={`mt-2 font-display text-2xl font-medium tabular-nums tracking-[-0.01em] ${
           tone === "good" ? "text-emerald" : tone === "warn" ? "text-destructive" : ""
         }`}
       >
@@ -457,4 +459,5 @@ function Stat({
     </div>
   );
 }
+
 
