@@ -422,6 +422,14 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
   let start = toIsoDate(base.startDate);
   let end = toIsoDate(base.endDate);
 
+  // Flexible planning: a month plus a length is enough to build a concrete span.
+  if (base.dateMode === "flexible" && /^\d{4}-\d{2}$/.test(base.flexibleMonth ?? "")) {
+    const nights = clamp(Math.round(base.flexibleNights) || 7, 2, 30);
+    start = `${base.flexibleMonth}-08`;
+    end = addDaysIso(start, nights);
+  }
+
+
   // A start in the past is fine for a saved trip, but an unusable one is not.
   if (!start) start = addDaysIso(todayIso(), 30);
   if (!end || nightsBetweenSafe(start, end) === null) {
@@ -455,6 +463,14 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
 /** How many nights the engine is planning for. */
 export const tripNights = (prefs: TripPreferences) =>
   nightsBetweenSafe(prefs.startDate, prefs.endDate) ?? DEFAULT_TRIP_NIGHTS;
+
+/**
+ * A blank end city means the traveller has no fixed destination, so Astera
+ * compares destinations instead of optimising around one.
+ */
+export const isDiscoveryTrip = (prefs: Partial<TripPreferences>) =>
+  !(prefs.endCity ?? "").trim();
+
 
 /** Pure, synchronous city selection — no network, so it can be run up front. */
 function selectCities(
@@ -876,10 +892,14 @@ export async function optimiseFurther(
 /** Default planner state. Dates sit far enough out to be bookable. */
 export const SAMPLE_PREFERENCES: TripPreferences = {
   startCity: "London",
-  endCity: "London",
+  endCity: "",
   startDate: addDays(todayIso(), 45),
   endDate: addDays(todayIso(), 55),
+  dateMode: "exact",
+  flexibleMonth: addDays(todayIso(), 45).slice(0, 7),
+  flexibleNights: 10,
   travellers: 2,
+
   budget: 2400,
   currency: "EUR",
   interests: ["food", "nature", "photography"],

@@ -6,7 +6,9 @@ import { toast } from "sonner";
 
 import { DataBadge } from "@/components/common/DataBadge";
 import { PageShell } from "@/components/layout/PageShell";
+import { FlightOffers } from "@/components/trip/FlightOffers";
 import { OptimisePanel } from "@/components/trip/OptimisePanel";
+
 import { TripCard } from "@/components/trip/TripCard";
 import { TripCardSkeleton } from "@/components/trip/TripCardSkeleton";
 import { CompareTable } from "@/components/trip/CompareTable";
@@ -44,11 +46,12 @@ export const Route = createFileRoute("/results")({
 });
 
 const STAGES = [
-  "Reading your constraints",
-  "Pricing 4,200 city combinations",
-  "Checking weather and transit windows",
-  "Ranking the survivors",
+  "Understanding your preferences",
+  "Comparing suitable destinations",
+  "Balancing time and budget",
+  "Ranking your best routes",
 ];
+
 
 type RunState = "idle" | "loading" | "done" | "timeout" | "error";
 
@@ -261,6 +264,12 @@ function ResultsPage() {
                 />
               </div>
             ))}
+          </div>
+        )}
+
+        {!loading && best && !sample && (
+          <div className="mt-8">
+            <FlightOffers route={best} enabled={!best.preferences.avoidFlights} />
           </div>
         )}
 

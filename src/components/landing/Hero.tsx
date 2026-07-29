@@ -15,6 +15,8 @@ import { Slider } from "@/components/ui/slider";
 import { CITIES } from "@/data/cities";
 import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency, nightsBetween } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { isDiscoveryTrip } from "@/services/tripOptimizer";
 
 export function Hero() {
   const navigate = useNavigate();
@@ -25,6 +27,13 @@ export function Hero() {
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
 
   const nights = nightsBetween(preferences.startDate, preferences.endDate);
+  const discovery = isDiscoveryTrip(preferences);
+  const datesReady =
+    preferences.dateMode === "flexible"
+      ? Boolean(preferences.flexibleMonth) && preferences.flexibleNights >= 2
+      : Boolean(preferences.startDate && preferences.endDate);
+  const canContinue = Boolean(preferences.startCity.trim()) && datesReady && preferences.budget > 0;
+
 
   /** The preview route reacts to budget and trip length — the engine in miniature. */
   const previewStops = useMemo(() => {
@@ -92,33 +101,14 @@ export function Hero() {
           automatically — from your budget, your dates and the way you like to travel.
         </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-9 flex flex-col gap-3 sm:flex-row"
-        >
-          <Button asChild variant="hero" size="xl">
-            <Link to="/plan">
-              Find trips within my budget
-              <ArrowRight aria-hidden />
-            </Link>
-          </Button>
-          <Button asChild variant="glass" size="xl">
-            <Link to="/results" search={{ sample: true }}>
-              Try a sample trip
-            </Link>
-          </Button>
-        </motion.div>
-
-        {/* Interactive search widget — the background route reacts as you move it. */}
+        {/* Four fields only — everything else is asked in the planner. */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-14 rounded-4xl surface-glass p-5 shadow-float sm:p-7"
+          transition={{ duration: 0.9, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-10 rounded-4xl surface-glass p-5 shadow-float sm:p-7"
         >
-          <div className="grid gap-5 md:grid-cols-[1.1fr_1fr_1fr_auto] md:items-end">
+          <div className="grid gap-5 lg:grid-cols-2">
             <div className="min-w-0">
               <Label htmlFor="hero-start" className="text-xs font-semibold tracking-wide uppercase">
                 Starting from
@@ -127,44 +117,100 @@ export function Hero() {
                 className="mt-2"
                 id="hero-start"
                 size="lg"
+                icon="plane"
                 value={preferences.startCity}
                 onChange={(value: string) => update("startCity", value)}
-                placeholder="City, airport or country"
+                placeholder="City or airport"
               />
-
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:col-span-1">
-              <div>
-                <Label htmlFor="hero-from" className="text-xs font-semibold tracking-wide uppercase">
-                  From
-                </Label>
-                <Input
-                  id="hero-from"
-                  type="date"
-                  value={preferences.startDate}
-                  onChange={(event) => update("startDate", event.target.value)}
-                  className="mt-2 h-12 rounded-2xl"
-                />
+            <div className="min-w-0">
+              <Label htmlFor="hero-end" className="text-xs font-semibold tracking-wide uppercase">
+                End city · optional
+              </Label>
+              <PlaceSearch
+                className="mt-2"
+                id="hero-end"
+                size="lg"
+                icon="pin"
+                value={preferences.endCity}
+                onChange={(value: string) => update("endCity", value)}
+                placeholder="Leave blank and ASTERA will discover destinations"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-xs font-semibold tracking-wide uppercase">Dates</Label>
+                <div className="flex gap-1 rounded-full border border-border/60 bg-background/60 p-0.5">
+                  {(["exact", "flexible"] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={preferences.dateMode === mode}
+                      onClick={() => update("dateMode", mode)}
+                      className={cn(
+                        "rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors",
+                        preferences.dateMode === mode
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div>
-                <Label htmlFor="hero-to" className="text-xs font-semibold tracking-wide uppercase">
-                  To
-                </Label>
-                <Input
-                  id="hero-to"
-                  type="date"
-                  value={preferences.endDate}
-                  onChange={(event) => update("endDate", event.target.value)}
-                  className="mt-2 h-12 rounded-2xl"
-                />
-              </div>
+
+              {preferences.dateMode === "exact" ? (
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <Input
+                    id="hero-from"
+                    type="date"
+                    aria-label="Leaving"
+                    value={preferences.startDate}
+                    onChange={(event) => update("startDate", event.target.value)}
+                    className="h-12 rounded-2xl"
+                  />
+                  <Input
+                    id="hero-to"
+                    type="date"
+                    aria-label="Returning"
+                    value={preferences.endDate}
+                    onChange={(event) => update("endDate", event.target.value)}
+                    className="h-12 rounded-2xl"
+                  />
+                </div>
+              ) : (
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <Input
+                    id="hero-month"
+                    type="month"
+                    aria-label="Month"
+                    value={preferences.flexibleMonth}
+                    onChange={(event) => update("flexibleMonth", event.target.value)}
+                    className="h-12 rounded-2xl"
+                  />
+                  <Input
+                    id="hero-nights"
+                    type="number"
+                    min={2}
+                    max={30}
+                    aria-label="Nights"
+                    value={preferences.flexibleNights}
+                    onChange={(event) =>
+                      update("flexibleNights", Math.max(2, Math.min(30, Number(event.target.value) || 7)))
+                    }
+                    className="h-12 rounded-2xl"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="min-w-0">
               <div className="flex items-baseline justify-between gap-2">
                 <Label htmlFor="hero-budget" className="text-xs font-semibold tracking-wide uppercase">
-                  Total budget
+                  Total trip budget
                 </Label>
                 <span className="font-display text-lg font-semibold tabular-nums">
                   <AnimatedCounter
@@ -176,33 +222,45 @@ export function Hero() {
               </div>
               <Slider
                 id="hero-budget"
-                className="mt-4"
+                className="mt-5"
                 min={400}
                 max={9000}
                 step={100}
                 value={[preferences.budget]}
                 onValueChange={([value]) => update("budget", value)}
-                aria-label="Total budget"
+                aria-label="Total trip budget"
               />
             </div>
+          </div>
 
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button
               size="lg"
               variant="hero"
-              className="w-full md:w-auto"
-              onClick={() => navigate({ to: "/results" })}
+              disabled={!canContinue}
+              className="w-full sm:w-auto"
+              onClick={() => navigate({ to: "/plan" })}
             >
-              Optimise
+              Personalise my trip
               <ArrowRight aria-hidden />
             </Button>
+            <Button asChild size="lg" variant="glass" className="w-full sm:w-auto">
+              <Link to="/results" search={{ sample: true }}>
+                Try a sample trip
+              </Link>
+            </Button>
+            <p className="text-xs text-muted-foreground sm:ml-2">
+              Takes about one minute · {nights} nights
+            </p>
           </div>
 
-          <p className="mt-5 text-sm text-muted-foreground">
-            {nights} nights · route preview across{" "}
-            <span className="font-semibold text-foreground">{previewStops.length} candidate stops</span>{" "}
-            · all figures are estimates until you connect live providers.
+          <p className="mt-4 text-sm text-muted-foreground">
+            {discovery
+              ? "ASTERA will compare destinations that fit your budget and preferences."
+              : `Destination-specific: we optimise flights, schedule, experiences and budget around ${preferences.endCity.trim()}.`}
           </p>
         </motion.div>
+
       </motion.div>
     </section>
   );
