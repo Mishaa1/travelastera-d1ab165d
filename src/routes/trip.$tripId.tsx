@@ -313,15 +313,12 @@ function TripDetailPage() {
                       </span>
                     )}
                   </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <Slot icon={<Sunrise className="h-4 w-4" aria-hidden />} label="Morning" text={day.morning} />
-                    <Slot icon={<Sun className="h-4 w-4" aria-hidden />} label="Afternoon" text={day.afternoon} />
-                    <Slot icon={<Moon className="h-4 w-4" aria-hidden />} label="Evening" text={day.evening} />
-                  </div>
-                  <p className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
-                    <Utensils className="mt-0.5 h-4 w-4 shrink-0 text-sunset" aria-hidden />
-                    {day.restaurant}
-                  </p>
+                  <DayExperienceGrid
+                    day={day}
+                    stop={route.stops.find((stop) => stop.name === day.city)}
+                    preferences={route.preferences}
+                  />
+
                   <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
                     <CloudRain className="mt-0.5 h-4 w-4 shrink-0 text-teal" aria-hidden />
                     If it rains: {day.rainyDayAlternative}
