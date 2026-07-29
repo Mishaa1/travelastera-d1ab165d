@@ -67,11 +67,20 @@ export type Activity =
   | "architecture"
   | "nightlife";
 
+export type DateMode = "exact" | "flexible";
+
 export interface TripPreferences {
   startCity: string;
+  /** Blank means destination discovery — Astera picks where you go. */
   endCity: string;
   startDate: string;
   endDate: string;
+  /** Exact dates, or a month plus a trip length. */
+  dateMode: DateMode;
+  /** YYYY-MM, used when `dateMode` is "flexible". */
+  flexibleMonth: string;
+  /** Nights wanted when `dateMode` is "flexible". */
+  flexibleNights: number;
   travellers: number;
   budget: number;
   currency: "EUR" | "USD" | "GBP";
@@ -88,6 +97,7 @@ export interface TripPreferences {
   /** Free-text context, e.g. "I already have accommodation in Vienna." */
   notes: string;
 }
+
 
 
 
