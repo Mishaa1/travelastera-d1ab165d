@@ -15,6 +15,8 @@ import { Slider } from "@/components/ui/slider";
 import { CITIES } from "@/data/cities";
 import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency, nightsBetween } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { isDiscoveryTrip } from "@/services/tripOptimizer";
 
 export function Hero() {
   const navigate = useNavigate();
@@ -25,6 +27,13 @@ export function Hero() {
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
 
   const nights = nightsBetween(preferences.startDate, preferences.endDate);
+  const discovery = isDiscoveryTrip(preferences);
+  const datesReady =
+    preferences.dateMode === "flexible"
+      ? Boolean(preferences.flexibleMonth) && preferences.flexibleNights >= 2
+      : Boolean(preferences.startDate && preferences.endDate);
+  const canContinue = Boolean(preferences.startCity.trim()) && datesReady && preferences.budget > 0;
+
 
   /** The preview route reacts to budget and trip length — the engine in miniature. */
   const previewStops = useMemo(() => {
