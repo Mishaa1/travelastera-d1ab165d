@@ -46,11 +46,12 @@ export const Route = createFileRoute("/results")({
 });
 
 const STAGES = [
-  "Reading your constraints",
-  "Pricing 4,200 city combinations",
-  "Checking weather and transit windows",
-  "Ranking the survivors",
+  "Understanding your preferences",
+  "Comparing suitable destinations",
+  "Balancing time and budget",
+  "Ranking your best routes",
 ];
+
 
 type RunState = "idle" | "loading" | "done" | "timeout" | "error";
 
