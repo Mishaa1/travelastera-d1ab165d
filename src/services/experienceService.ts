@@ -191,7 +191,7 @@ const HISTORIC_NOTE: Record<ExperienceCategory, string[]> = {
   food: ["Recipes protected by regional designation", "One of the oldest food halls in the country", "Traditional method, unchanged"],
 };
 
-const CATEGORY_ACTIVITY: Record<ExperienceCategory, Activity[]> = {
+export const CATEGORY_ACTIVITY: Record<ExperienceCategory, Activity[]> = {
   landmark: ["castles", "architecture", "hidden-gems"],
   museum: ["museums"],
   nature: ["nature", "lakes", "hiking"],
@@ -224,7 +224,7 @@ const CATEGORY_ORDER: ExperienceCategory[] = [
   "nightlife",
 ];
 
-const ACTIVITY_LABEL: Record<Activity, string> = {
+export const ACTIVITY_LABEL: Record<Activity, string> = {
   nature: "nature",
   mountains: "mountains",
   lakes: "lakes",
