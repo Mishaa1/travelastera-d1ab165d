@@ -283,3 +283,10 @@
 @utility drift {
   animation: safara-drift 9s ease-in-out infinite;
 }
+
+@utility wordmark-track {
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  /* the trailing letter-space would otherwise offset optical centring */
+  margin-right: -0.19em;
+}
