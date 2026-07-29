@@ -210,26 +210,46 @@ function ResultsPage() {
       <div className="mx-auto max-w-7xl px-5 pb-24 md:px-8">
         {loading ? (
           <div>
-            <div className="flex items-center gap-3 rounded-3xl border border-border bg-card p-5 shadow-soft">
-              <Loader2 className="h-5 w-5 animate-spin text-teal" aria-hidden />
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={stage}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="text-sm font-medium"
-                >
-                  {STAGES[stage]}
-                </motion.p>
-              </AnimatePresence>
+            <div className="overflow-hidden rounded-4xl border border-border bg-card p-6 shadow-soft sm:p-7">
+              <div className="flex items-center gap-3">
+                <span className="relative grid h-9 w-9 place-items-center">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-teal/25" />
+                  <Loader2 className="h-4 w-4 animate-spin text-teal" aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                    Step {stage + 1} of {STAGES.length}
+                  </p>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={stage}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                      className="mt-1 font-display text-lg font-medium tracking-[-0.01em]"
+                    >
+                      {STAGES[stage]}
+                    </motion.p>
+                  </AnimatePresence>
+                </div>
+              </div>
+              <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-muted/60">
+                <motion.div
+                  className="h-full rounded-full bg-teal"
+                  initial={false}
+                  animate={{ width: `${((stage + 1) / STAGES.length) * 100}%` }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </div>
             </div>
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="mt-8 grid gap-6 lg:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <TripCardSkeleton key={index} />
               ))}
             </div>
           </div>
+
         ) : routes.length === 0 ? (
           <EmptyState state={state} onRetry={() => void run()} />
         ) : (
