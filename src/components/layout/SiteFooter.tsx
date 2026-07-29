@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Compass } from "lucide-react";
+import { Wordmark } from "@/components/layout/Wordmark";
 
 export function SiteFooter() {
   return (
@@ -7,12 +7,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-2xl gradient-sea text-primary-foreground">
-                <Compass className="h-4.5 w-4.5" aria-hidden />
-              </span>
-              <span className="font-display text-xl font-semibold">Astera</span>
-            </div>
+            <Wordmark withMark size="md" />
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               An optimisation engine for travel. Tell us the constraints, we search the
               combinations and hand back the trip worth taking.
