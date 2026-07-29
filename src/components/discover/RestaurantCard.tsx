@@ -1,6 +1,8 @@
 import { Footprints, Sparkles, Star, UtensilsCrossed } from "lucide-react";
 
+import { ExperienceImage } from "@/components/common/ExperienceImage";
 import { FavouriteButton } from "@/components/discover/FavouriteButton";
+
 import {
   DIET_LABEL,
   priceLevelLabel,
