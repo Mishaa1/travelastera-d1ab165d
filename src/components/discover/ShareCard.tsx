@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { ScoreRing } from "@/components/common/ScoreRing";
 import { Button } from "@/components/ui/button";
+import { Wordmark } from "@/components/layout/Wordmark";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,11 @@ export function ShareCard({ route }: { route: TripRoute }) {
             className="h-44 w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent" />
+          <Wordmark
+            withMark
+            size="sm"
+            className="absolute top-3 right-4 text-primary-foreground/90"
+          />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold tracking-widest text-primary-foreground/75 uppercase">
