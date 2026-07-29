@@ -58,7 +58,7 @@ function estimateOffer(params: FlightSearchParams): FlightOffer {
     totalPrice: pricePerTraveller * params.travellers,
     durationHours,
     stops: km > 2200 ? 1 : 0,
-    quality: ESTIMATE_QUALITY("Safara distance model"),
+    quality: ESTIMATE_QUALITY("Astera distance model"),
   };
 }
 
@@ -111,6 +111,6 @@ export function estimateGroundLeg(
   return {
     cost,
     hours: Math.round((km / speed + 0.6) * 10) / 10,
-    quality: ESTIMATE_QUALITY("Safara distance model"),
+    quality: ESTIMATE_QUALITY("Astera distance model"),
   };
 }

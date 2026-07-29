@@ -26,11 +26,11 @@ export function SiteHeader() {
         className="absolute inset-0 surface-glass border-x-0 border-t-0"
       />
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:h-20 md:px-8">
-        <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="Safara home">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="Astera home">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl gradient-sea text-primary-foreground">
             <Compass className="h-4.5 w-4.5" aria-hidden />
           </span>
-          <span className="truncate font-display text-xl font-semibold tracking-tight">Safara</span>
+          <span className="truncate font-display text-xl font-semibold tracking-tight">Astera</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

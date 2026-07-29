@@ -9,7 +9,7 @@ import {
 const FAQS = [
   {
     q: "Is this an itinerary planner?",
-    a: "No. An itinerary planner assumes you already know where you're going. Safara starts from your constraints — budget, dates, cities you leave from and return to, how far you'll travel — and discovers the destination as an output of the search.",
+    a: "No. An itinerary planner assumes you already know where you're going. Astera starts from your constraints — budget, dates, cities you leave from and return to, how far you'll travel — and discovers the destination as an output of the search.",
   },
   {
     q: "Are the prices real?",

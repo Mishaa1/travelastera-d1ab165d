@@ -10,9 +10,9 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { Reveal } from "@/components/common/Reveal";
 import { Button } from "@/components/ui/button";
 
-const TITLE = "Safara — See how far your budget can take you";
+const TITLE = "Astera — See how far your budget can take you";
 const DESCRIPTION =
-  "Safara is an AI travel optimiser. Give it your budget, dates, cities and interests and it searches thousands of route combinations to build your best possible trip.";
+  "Astera is an AI travel optimiser. Give it your budget, dates, cities and interests and it searches thousands of route combinations to build your best possible trip.";
 
 export const Route = createFileRoute("/")({
   head: () => ({

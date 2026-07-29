@@ -31,13 +31,13 @@ import type { TripRoute } from "@/lib/types";
 export const Route = createFileRoute("/trip/$tripId")({
   head: () => ({
     meta: [
-      { title: "Trip itinerary — Safara" },
+      { title: "Trip itinerary — Astera" },
       {
         name: "description",
         content:
           "Day-by-day itinerary, budget breakdown, hotels, weather, packing list and the reasoning behind this optimised route.",
       },
-      { property: "og:title", content: "Trip itinerary — Safara" },
+      { property: "og:title", content: "Trip itinerary — Astera" },
       {
         property: "og:description",
         content: "Day-by-day plan, budget breakdown and the reasoning behind this optimised route.",

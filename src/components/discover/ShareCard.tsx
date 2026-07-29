@@ -22,7 +22,7 @@ export function ShareCard({ route }: { route: TripRoute }) {
   const summary = [
     `${route.title} — ${route.stops.map((stop) => stop.name).join(" → ")}`,
     `${route.stops.reduce((total, stop) => total + stop.nights, 0)} nights · ${formatCurrency(route.cost, route.preferences.currency)} · ${formatHours(route.journeyHours)} in transit`,
-    `Optimisation score ${route.scores.overall}/100 — planned with Safara.`,
+    `Optimisation score ${route.scores.overall}/100 — planned with Astera.`,
   ].join("\n");
 
   async function copy(text: string, kind: "link" | "summary") {

@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { useSavedTrips } from "@/hooks/useSavedTrips";
 import { formatCurrency, formatDate, formatHours } from "@/lib/format";
 
-const TITLE = "Saved trips — Safara";
+const TITLE = "Saved trips — Astera";
 const DESCRIPTION =
-  "Your saved Safara routes, stored in this browser. Rename them, compare them side by side or open the full itinerary.";
+  "Your saved Astera routes, stored in this browser. Rename them, compare them side by side or open the full itinerary.";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
