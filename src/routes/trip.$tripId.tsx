@@ -6,10 +6,6 @@ import {
   Brain,
   CloudRain,
   Luggage,
-  Moon,
-  Sun,
-  Sunrise,
-  Utensils,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +17,7 @@ import { ScoreBar } from "@/components/common/ScoreBar";
 import { ScoreRing } from "@/components/common/ScoreRing";
 import { PageShell } from "@/components/layout/PageShell";
 import { RouteMap } from "@/components/map/RouteMap";
+import { DayExperienceGrid } from "@/components/trip/DayExperienceGrid";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSavedTrips } from "@/hooks/useSavedTrips";
@@ -374,14 +371,3 @@ function Stat({
   );
 }
 
-function Slot({ icon, label, text }: { icon: React.ReactNode; label: string; text: string }) {
-  return (
-    <div className="rounded-2xl bg-secondary/60 p-4">
-      <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-        {icon}
-        {label}
-      </span>
-      <p className="mt-1.5 text-sm leading-relaxed">{text}</p>
-    </div>
-  );
-}
