@@ -464,6 +464,14 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
 export const tripNights = (prefs: TripPreferences) =>
   nightsBetweenSafe(prefs.startDate, prefs.endDate) ?? DEFAULT_TRIP_NIGHTS;
 
+/**
+ * A blank end city means the traveller has no fixed destination, so Astera
+ * compares destinations instead of optimising around one.
+ */
+export const isDiscoveryTrip = (prefs: Partial<TripPreferences>) =>
+  !(prefs.endCity ?? "").trim();
+
+
 /** Pure, synchronous city selection — no network, so it can be run up front. */
 function selectCities(
   strategy: Strategy,
