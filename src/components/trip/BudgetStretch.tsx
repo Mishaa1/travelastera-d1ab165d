@@ -39,19 +39,41 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
 
   return (
     <section
-      className={cn("rounded-3xl border border-border bg-background/60 p-4", className)}
+      className={cn(
+        "relative overflow-hidden rounded-[2rem] border border-border bg-card p-6 shadow-soft sm:p-8",
+        className,
+      )}
       aria-label="Stretch your budget"
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-          <Sparkles className="h-3.5 w-3.5 text-teal" aria-hidden />
-          Stretch your budget
-        </h4>
+      {/* Featured-insight backdrop — a whisper, not a shout. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-70"
+        style={{
+          background:
+            "radial-gradient(140% 90% at 100% 0%, color-mix(in oklab, var(--color-teal) 12%, transparent) 0%, transparent 55%), radial-gradient(120% 80% at 0% 100%, color-mix(in oklab, var(--color-sunset) 10%, transparent) 0%, transparent 55%)",
+        }}
+      />
+
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.18em] text-teal uppercase">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
+            Featured insight
+          </p>
+          <h3 className="mt-2 font-display text-2xl font-medium tracking-[-0.01em]">
+            Stretch your budget
+          </h3>
+          <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Toggle any adjustment — the total re-prices instantly. Nothing is booked
+            until you say so.
+          </p>
+        </div>
         {applied.length > 0 && (
           <button
             type="button"
             onClick={() => setApplied([])}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <RotateCcw className="h-3 w-3" aria-hidden />
             Reset
@@ -59,7 +81,7 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
         )}
       </div>
 
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-6 space-y-2.5">
         {options.map((option) => (
           <StretchRow
             key={option.id}
@@ -77,12 +99,12 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
         ))}
       </ul>
 
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-3 rounded-2xl bg-secondary/70 px-4 py-3">
-        <div>
-          <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 rounded-3xl border border-border bg-background/80 p-5 backdrop-blur-sm">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
             {applied.length ? "Adjusted trip cost" : "Trip cost as planned"}
           </p>
-          <p className="font-display text-2xl font-semibold tabular-nums">
+          <p className="mt-1.5 font-display text-3xl font-medium tabular-nums tracking-[-0.02em]">
             <AnimatedCounter
               value={newCost}
               duration={0.45}
@@ -92,7 +114,7 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
         </div>
         <p
           className={cn(
-            "text-sm font-medium tabular-nums",
+            "text-right text-sm font-medium tabular-nums",
             overBudget ? "text-destructive" : "text-emerald",
           )}
         >
@@ -103,14 +125,15 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
       </div>
 
       {applied.length > 0 && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Estimates applied to this route only — nothing is booked, and your saved copy stays as it
-          was until you save again.
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          Estimates applied to this route only — your saved copy stays as it was
+          until you save again.
         </p>
       )}
     </section>
   );
 }
+
 
 function StretchRow({
   option,
