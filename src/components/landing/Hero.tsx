@@ -35,7 +35,7 @@ export function Hero() {
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-[oklch(0.14_0.04_250)]">
       {/* Satellite backdrop -------------------------------------------------- */}
-      <motion.div style={{ y: imageY }} className="absolute inset-0 -z-10">
+      <motion.div style={{ y: imageY }} className="absolute inset-0 z-0">
         <img
           src={heroImage.url}
           alt="Satellite view of Europe at night with glowing city lights and travel routes"
@@ -51,7 +51,7 @@ export function Hero() {
       </motion.div>
 
       {/* Animated travel paths between glowing city nodes */}
-      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[70%] w-full opacity-40" />
+      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 z-[1] h-[70%] w-full opacity-40" />
 
 
       <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
