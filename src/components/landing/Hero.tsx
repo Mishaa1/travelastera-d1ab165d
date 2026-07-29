@@ -54,7 +54,7 @@ export function Hero() {
       <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 z-[1] h-[70%] w-full opacity-40" />
 
 
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
         {/* Editorial copy ------------------------------------------------------ */}
         <div className="max-w-2xl">
           <motion.div
