@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react";
 
 import heroImage from "@/assets/hero-coast.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
+import { Wordmark } from "@/components/layout/Wordmark";
 import { PlaceSearch } from "@/components/common/PlaceSearch";
 import { RouteSketch } from "@/components/map/RouteSketch";
 import { Button } from "@/components/ui/button";
