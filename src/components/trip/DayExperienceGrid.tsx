@@ -63,7 +63,10 @@ export function DayExperienceGrid({ day, stop, preferences }: DayExperienceGridP
           <div className="mt-2">
             <RestaurantCard restaurant={restaurant} preferences={preferences} />
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{day.restaurant}</p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Also on the shortlist for this day: {day.restaurant}
+          </p>
+
         </div>
       )}
 
