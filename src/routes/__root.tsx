@@ -78,7 +78,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Astera — AI Travel Optimiser" },
+      { title: "Astera — AI Travel Advisor" },
       {
         name: "description",
         content:
@@ -87,6 +87,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Astera" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Astera — AI Travel Advisor" },
+      { name: "twitter:title", content: "Astera — AI Travel Advisor" },
+      { property: "og:description", content: "Astera finds the best possible trip for your budget, dates and interests instead of asking you to pick a destination first." },
+      { name: "twitter:description", content: "Astera finds the best possible trip for your budget, dates and interests instead of asking you to pick a destination first." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c3dc18a9-914e-4f07-89db-917c277ffb01/id-preview-064c97c5--470c20cb-5c06-46ff-ab7a-ea4ca5d68c7a.lovable.app-1785324998435.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c3dc18a9-914e-4f07-89db-917c277ffb01/id-preview-064c97c5--470c20cb-5c06-46ff-ab7a-ea4ca5d68c7a.lovable.app-1785324998435.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
