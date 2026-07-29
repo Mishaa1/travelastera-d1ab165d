@@ -5,7 +5,7 @@ import type { DataQuality } from "@/lib/types";
 
 const STYLES = {
   live: {
-    label: "Live",
+    label: "Live price",
     className: "bg-emerald/12 text-emerald border-emerald/30",
     Icon: Radio,
   },
@@ -15,11 +15,12 @@ const STYLES = {
     Icon: Sparkles,
   },
   mock: {
-    label: "Prototype estimate",
+    label: "Sample data",
     className: "bg-sunset/15 text-sunset-foreground border-sunset/40",
     Icon: Info,
   },
 } as const;
+
 
 interface DataBadgeProps {
   quality: DataQuality;

@@ -14,6 +14,8 @@ import { AnimatedCounter } from "@/components/common/AnimatedCounter";
 import { DataBadge } from "@/components/common/DataBadge";
 import { Reveal } from "@/components/common/Reveal";
 import { ScoreBar } from "@/components/common/ScoreBar";
+import { ScoreBreakdown } from "@/components/trip/ScoreBreakdown";
+import { BudgetStretch } from "@/components/trip/BudgetStretch";
 import { ScoreRing } from "@/components/common/ScoreRing";
 import { PageShell } from "@/components/layout/PageShell";
 import { RouteMap } from "@/components/map/RouteMap";
@@ -181,7 +183,14 @@ function TripDetailPage() {
             <ScoreBar label="Food" value={route.scores.food} tone="sunset" delay={0.1} />
             <ScoreBar label="Weather" value={route.scores.weather} tone="teal" delay={0.15} />
           </div>
+          <ScoreBreakdown
+            factors={route.scoreFactors ?? []}
+            overall={route.scores.overall}
+            className="mt-6"
+          />
+          <BudgetStretch route={route} className="mt-6" />
         </Reveal>
+
 
         {/* Map -------------------------------------------------------------- */}
         <Reveal className="mt-12">

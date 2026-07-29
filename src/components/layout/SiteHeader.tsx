@@ -10,9 +10,10 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/plan", label: "Plan" },
-  { to: "/results", label: "Results" },
+  { to: "/results", label: "Routes" },
   { to: "/saved", label: "Saved" },
 ] as const;
+
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
