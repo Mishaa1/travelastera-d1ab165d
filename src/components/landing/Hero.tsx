@@ -3,9 +3,9 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useRef } from "react";
 
-import heroImage from "@/assets/hero-editorial.jpg";
+import heroImage from "@/assets/hero-satellite.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
-import { JourneyPath } from "@/components/common/JourneyPath";
+import { TravelPaths } from "@/components/common/TravelPaths";
 import { Wordmark } from "@/components/layout/Wordmark";
 import { PlaceSearch } from "@/components/common/PlaceSearch";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export function Hero() {
   const { preferences, update } = useTripDraft();
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "14%"]);
+  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
 
   const nights = nightsBetween(preferences.startDate, preferences.endDate);
   const discovery = isDiscoveryTrip(preferences);
@@ -33,24 +33,25 @@ export function Hero() {
   const canContinue = Boolean(preferences.startCity.trim()) && datesReady && preferences.budget > 0;
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden">
-      {/* Cinematic backdrop --------------------------------------------------- */}
+    <section ref={sectionRef} className="relative overflow-hidden bg-[oklch(0.14_0.04_250)]">
+      {/* Satellite backdrop -------------------------------------------------- */}
       <motion.div style={{ y: imageY }} className="absolute inset-0 -z-10">
         <img
           src={heroImage}
-          alt="A traveller looking out over a Mediterranean coastal town at golden hour"
+          alt="Satellite view of Europe at night with glowing city lights and travel routes"
           width={1920}
           height={1200}
           fetchPriority="high"
-          className="h-[115%] w-full object-cover"
+          className="h-[110%] w-full object-cover opacity-95"
         />
-        {/* Two-tone gradient: deep bottom for typography contrast, softer top. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/60 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink/55 via-ink/20 to-transparent" />
+        {/* Left-side ink wash for typographic contrast, right stays open. */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/85 via-[oklch(0.14_0.04_250)]/40 to-transparent" />
+        {/* Natural fade into the warm parchment page background. */}
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-background" />
       </motion.div>
 
-      {/* Subtle animated journey path — travel implied, not shouted. */}
-      <JourneyPath className="pointer-events-none absolute inset-x-0 top-24 -z-10 h-[68%] w-full text-primary-foreground/40" />
+      {/* Animated travel paths between glowing city nodes */}
+      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[70%] w-full" />
 
       <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
         {/* Editorial copy ------------------------------------------------------ */}
@@ -68,10 +69,10 @@ export function Hero() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-ink/25 px-3.5 py-1.5 text-[11px] font-medium tracking-[0.14em] text-primary-foreground/85 uppercase backdrop-blur-sm"
+            className="mt-8 inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-[oklch(0.14_0.04_250)]/40 px-3.5 py-1.5 text-[11px] font-medium tracking-[0.14em] text-primary-foreground/85 uppercase backdrop-blur-sm"
           >
             <Sparkles className="h-3 w-3" aria-hidden />
-            AI travel optimiser
+            Intelligent travel operating system
           </motion.p>
 
           <motion.h1
@@ -90,8 +91,8 @@ export function Hero() {
             transition={{ duration: 0.9, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="mt-7 max-w-xl text-lg leading-[1.65] text-primary-foreground/80"
           >
-            Stop comparing a dozen websites. Astera reads your budget, dates and the
-            way you like to travel, then quietly builds the trip worth taking.
+            Tell us your budget, dates and travel style. We'll build the
+            journeys worth taking.
           </motion.p>
         </div>
 
