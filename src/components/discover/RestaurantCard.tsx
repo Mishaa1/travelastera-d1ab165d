@@ -90,10 +90,14 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
           })}
         </div>
 
-        <p className="flex gap-2 text-xs text-muted-foreground">
-          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-          {restaurant.why}
-        </p>
+        <div className="rounded-2xl bg-secondary/60 px-3 py-2">
+          <p className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+            <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
+            Why Astera picked this
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{restaurant.why}</p>
+        </div>
+
       </div>
     </article>
   );
