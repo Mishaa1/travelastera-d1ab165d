@@ -39,19 +39,20 @@ export function Hero() {
         <img
           src={heroImage.url}
           alt="Satellite view of Europe at night with glowing city lights and travel routes"
-          width={1920}
-          height={1200}
+          width={1672}
+          height={941}
           fetchPriority="high"
-          className="h-[110%] w-full object-cover opacity-95"
+          className="h-[110%] w-full object-cover object-[55%_38%] brightness-[1.5] contrast-[1.08] saturate-[1.1]"
         />
         {/* Left-side ink wash for typographic contrast, right stays open. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/85 via-[oklch(0.14_0.04_250)]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/70 via-[oklch(0.14_0.04_250)]/15 to-transparent" />
         {/* Natural fade into the warm parchment page background. */}
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-background" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </motion.div>
 
       {/* Animated travel paths between glowing city nodes */}
-      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[70%] w-full" />
+      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[70%] w-full opacity-40" />
+
 
       <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
         {/* Editorial copy ------------------------------------------------------ */}
