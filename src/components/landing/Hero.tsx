@@ -86,12 +86,13 @@ export function Hero() {
           <motion.h1
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 font-display text-[clamp(2.75rem,6.4vw,5rem)] leading-[0.98] font-medium tracking-[-0.03em] text-primary-foreground"
+            transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-7 font-serif-display text-[clamp(3rem,7.2vw,5.75rem)] leading-[0.95] font-light tracking-[-0.02em] text-primary-foreground"
           >
             See how far your{" "}
-            <span className="italic text-primary-foreground/90">budget</span> can take you.
+            <span className="italic text-[oklch(0.88_0.11_84)]">budget</span> can take you.
           </motion.h1>
+
 
           <motion.p
             initial={{ opacity: 0, y: 22 }}
