@@ -6,6 +6,7 @@ import {
   Check,
   BookmarkCheck,
   ChevronDown,
+  ExternalLink,
   GitCompare,
   PiggyBank,
   Sparkles,
@@ -23,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency, formatHours } from "@/lib/format";
 import type { TripRoute } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
 
 interface TripCardProps {
   route: TripRoute;
@@ -46,6 +46,15 @@ export function TripCard({
 }: TripCardProps) {
   const currency = route.preferences.currency;
   const overBudget = route.budgetLeft < 0;
+  const hotel = route.stops[0].hotel;
+  const hotelTotal =
+    hotel.totalStayPrice ??
+    hotel.nightlyFrom *
+      route.stops[0].nights *
+      Math.max(1, Math.ceil(route.preferences.travellers / 2));
+  const hotelUrl =
+    hotel.websiteUrl ??
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${hotel.name}, ${hotel.area}`)}`;
 
   /** The single biggest saving available, teased here and detailed on the itinerary. */
   const topSaving = useMemo(
@@ -55,8 +64,6 @@ export function TripCard({
         .sort((a, b) => a.costDelta - b.costDelta)[0],
     [route.stretchOptions],
   );
-
-
 
   /** Editorial badge derived from the route's own numbers — purely presentational. */
   const badge = useMemo(() => {
@@ -100,7 +107,6 @@ export function TripCard({
             >
               {badge.label}
             </span>
-            <DataBadge quality={route.quality} className="surface-glass" />
           </div>
           <span className="rounded-full bg-ink/45 px-3 py-1 text-[11px] font-semibold text-primary-foreground backdrop-blur-sm">
             {route.countries.join(" · ")}
@@ -120,8 +126,7 @@ export function TripCard({
         </div>
       </div>
 
-
-      <div className="space-y-5 p-5 sm:p-6">
+      <div className="space-y-7 p-6 sm:p-8">
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium">
           {route.stops.map((stop, stopIndex) => (
             <li key={stop.id} className="flex items-center gap-2">
@@ -134,7 +139,7 @@ export function TripCard({
           ))}
         </ol>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-8 border-y border-border/60 py-5">
           <Metric
             icon={<Wallet className="h-4 w-4" aria-hidden />}
             label="Estimated cost"
@@ -146,28 +151,19 @@ export function TripCard({
             value={formatCurrency(Math.abs(route.budgetLeft), currency)}
             tone={overBudget ? "warn" : "good"}
           />
-          <Metric
-            icon={<Timer className="h-4 w-4" aria-hidden />}
-            label="In transit"
-            value={formatHours(route.journeyHours)}
-          />
-        </div>
-
-        <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-          <ScoreBar label="Experience" value={route.scores.experience} tone="primary" />
-          <ScoreBar label="Nature" value={route.scores.nature} tone="emerald" delay={0.05} />
-          <ScoreBar label="Food" value={route.scores.food} tone="sunset" delay={0.1} />
-          <ScoreBar label="Weather" value={route.scores.weather} tone="teal" delay={0.15} />
-          <ScoreBar label="Travel efficiency" value={route.scores.efficiency} tone="primary" delay={0.2} />
         </div>
 
         {route.reasoning.length > 0 && (
-          <div className="rounded-[20px] border border-border bg-secondary/50 p-5">
-            <p className="font-serif-display text-lg leading-snug">Why ASTERA picked this</p>
-            <ul className="mt-3 space-y-2">
-              {route.reasoning.slice(0, 4).map((reason) => (
+          <div>
+            <p className="font-serif-display text-xl leading-snug">Why ASTERA picked this</p>
+            <ul className="mt-4 space-y-3">
+              {route.reasoning.slice(0, 3).map((reason) => (
                 <li key={reason} className="flex items-start gap-2.5 text-sm leading-relaxed">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald" strokeWidth={2.2} aria-hidden />
+                  <Check
+                    className="mt-0.5 h-4 w-4 shrink-0 text-emerald"
+                    strokeWidth={2.2}
+                    aria-hidden
+                  />
                   <span>{reason}</span>
                 </li>
               ))}
@@ -175,48 +171,96 @@ export function TripCard({
           </div>
         )}
 
+        <div className="overflow-hidden rounded-3xl bg-secondary/55">
+          <div className="grid sm:grid-cols-[148px_minmax(0,1fr)]">
+            <img
+              src={hotel.imageUrl ?? route.image}
+              alt={`${hotel.name} in ${hotel.area}`}
+              className="h-40 w-full object-cover sm:h-full"
+              loading="lazy"
+            />
+            <div className="p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="mt-1 font-display text-lg font-semibold">{hotel.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {hotel.area} · {hotel.rating}★
+                  </p>
+                </div>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <Detail label="Per night" value={formatCurrency(hotel.nightlyFrom, currency)} />
+                <Detail label="Total stay" value={formatCurrency(hotelTotal, currency)} />
+              </dl>
+              {hotel.quality.source === "mock" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {hotel.fallbackReason ??
+                    "Hotelbeds was unavailable or returned no availability, so sample accommodation pricing is being used."}
+                </p>
+              )}
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <a
+                  href={hotelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-ink"
+                >
+                  Book hotel
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                </a>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`hotels near ${hotel.area}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  View 12 more hotels
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {route.scoreFactors?.length > 0 && (
-          <details className="group/score rounded-3xl border border-border">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-medium">
-              How we scored it
-              <ChevronDown
-                className="h-4 w-4 text-muted-foreground transition-transform group-open/score:rotate-180"
-                aria-hidden
+        <details className="group/details border-t border-border/60 pt-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold">
+            Trip details
+            <ChevronDown
+              className="h-4 w-4 transition-transform group-open/details:rotate-180"
+              aria-hidden
+            />
+          </summary>
+          <div className="mt-5 space-y-6">
+            <dl className="grid gap-4 text-sm sm:grid-cols-2">
+              <Detail label="In transit" value={formatHours(route.journeyHours)} />
+              <Detail label="Transport" value={route.transportRecommendation} />
+              <Detail
+                label="Weather"
+                value={`${route.stops[0].weather.tempC}°C · ${route.stops[0].weather.summary}`}
               />
-            </summary>
-            <div className="px-2 pb-2">
+              <Detail label="Nearby" value={route.stops[0].dayTrips.slice(0, 2).join(", ")} />
+            </dl>
+            <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+              <ScoreBar label="Experience" value={route.scores.experience} />
+              <ScoreBar label="Nature" value={route.scores.nature} tone="emerald" />
+              <ScoreBar label="Food" value={route.scores.food} tone="sunset" />
+              <ScoreBar label="Weather" value={route.scores.weather} tone="teal" />
+            </div>
+            {route.scoreFactors?.length > 0 && (
               <ScoreBreakdown
                 factors={route.scoreFactors}
                 overall={route.scores.overall}
-                className="border-0 bg-transparent p-2"
+                className="border-0 bg-transparent p-0"
               />
-            </div>
-          </details>
-        )}
-
-        {topSaving && (
-          <p className="flex items-start gap-2 rounded-2xl bg-emerald/8 p-3 text-xs leading-relaxed">
-            <PiggyBank className="mt-0.5 h-4 w-4 shrink-0 text-emerald" aria-hidden />
-            <span>
-              <span className="font-semibold text-emerald">
-                Save {formatCurrency(Math.abs(topSaving.costDelta), currency)}
-              </span>{" "}
-              — {topSaving.label.toLowerCase()}. Full list of adjustments is on the itinerary.
-            </span>
-          </p>
-        )}
-
-        <dl className="grid gap-3 rounded-3xl bg-secondary/70 p-4 text-sm sm:grid-cols-2">
-          <Detail label="Hotel pick" value={`${route.stops[0].hotel.name} · ${route.stops[0].hotel.area}`} />
-          <Detail label="Transport" value={route.transportRecommendation} />
-          <Detail label="Nearby day trips" value={route.stops[0].dayTrips.slice(0, 2).join(", ")} />
-          <Detail
-            label="Weather outlook"
-            value={`${route.stops[0].weather.tempC}°C · ${route.stops[0].weather.summary}`}
-          />
-        </dl>
-
+            )}
+            {topSaving && (
+              <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+                <PiggyBank className="mt-0.5 h-4 w-4 shrink-0 text-emerald" aria-hidden />
+                Save {formatCurrency(Math.abs(topSaving.costDelta), currency)} by{" "}
+                {topSaving.label.toLowerCase()}.
+              </p>
+            )}
+          </div>
+        </details>
 
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="hero" className="flex-1 min-w-36">
@@ -269,7 +313,7 @@ function Metric({
   tone?: "neutral" | "good" | "warn";
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-background/60 p-3">
+    <div>
       <span
         className={cn(
           "flex items-center gap-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase",

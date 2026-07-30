@@ -1,6 +1,6 @@
 /** Shared domain types for the Astera optimisation engine. */
 
-export type DataSource = "live" | "estimate" | "mock";
+export type DataSource = "live" | "test" | "estimate" | "mock";
 
 export interface DataQuality {
   source: DataSource;
@@ -98,9 +98,6 @@ export interface TripPreferences {
   notes: string;
 }
 
-
-
-
 export interface CostBreakdown {
   transport: number;
   accommodation: number;
@@ -130,8 +127,19 @@ export interface HotelSuggestion {
   name: string;
   area: string;
   nightlyFrom: number;
+  /** Total returned for the complete stay and requested room occupancy. */
+  totalStayPrice?: number;
   rating: number;
   style: string;
+  roomType?: string;
+  boardType?: string;
+  imageUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  currency?: string;
+  websiteUrl?: string;
+  /** Sanitized explanation when sample inventory replaced a provider result. */
+  fallbackReason?: string;
   quality: DataQuality;
 }
 
@@ -187,7 +195,6 @@ export interface BudgetStretchOption {
   tradeoff: string;
 }
 
-
 export interface TripRoute {
   id: string;
   title: string;
@@ -213,6 +220,28 @@ export interface TripRoute {
   quality: DataQuality;
   preferences: TripPreferences;
   generatedAt: string;
+  bookingSelection?: TripBookingSelection;
+}
+
+export interface BookingFlightSelection {
+  id: string;
+  source: "live" | "estimate";
+  airlineName: string;
+  originCode: string;
+  destinationCode: string;
+  departureAt?: string;
+  arrivalAt?: string;
+  durationMinutes: number;
+  stops: number;
+  baggageSummary?: string;
+  totalAmount: number;
+  currency: string;
+  bookingUrl?: string;
+}
+
+export interface TripBookingSelection {
+  flight?: BookingFlightSelection;
+  hotelNamesByStop: Record<string, string>;
 }
 
 export interface SavedTrip {
@@ -223,12 +252,7 @@ export interface SavedTrip {
 }
 
 export type OptimiseGoal =
-  | "spend-less"
-  | "reduce-travel"
-  | "add-city"
-  | "more-nature"
-  | "more-luxury"
-  | "avoid-flights";
+  "spend-less" | "reduce-travel" | "add-city" | "more-nature" | "more-luxury" | "avoid-flights";
 
 /** Anything a traveller can bookmark locally. */
 export type FavouriteKind = "attraction" | "restaurant" | "daytrip";

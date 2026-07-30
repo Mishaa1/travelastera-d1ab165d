@@ -23,7 +23,6 @@ import { distanceKm, geocodeCity } from "@/services/geocodeService";
 import { estimateNightlyRate, searchHotel } from "@/services/hotelService";
 import { getStopWeather } from "@/services/weatherService";
 
-
 /**
  * The Astera optimisation engine.
  *
@@ -105,7 +104,6 @@ export function effectiveInterests(prefs: TripPreferences): Interest[] {
   return [...new Set<Interest>([...(prefs.interests ?? []), ...derived])];
 }
 
-
 const clamp = (value: number, min = 0, max = 100) => Math.max(min, Math.min(max, value));
 
 function interestFit(city: CityRecord, interests: Interest[]): number {
@@ -113,9 +111,7 @@ function interestFit(city: CityRecord, interests: Interest[]): number {
     const all = Object.values(city.scores);
     return all.reduce((total, value) => total + value, 0) / all.length;
   }
-  return (
-    interests.reduce((total, interest) => total + city.scores[interest], 0) / interests.length
-  );
+  return interests.reduce((total, interest) => total + city.scores[interest], 0) / interests.length;
 }
 
 function legMode(
@@ -188,7 +184,6 @@ function fallbackHighlights(stop: TripStop, index: number): Highlight[] {
   ];
   return templates;
 }
-
 
 /**
  * One day plan per night, with nothing repeated anywhere in the trip.
@@ -264,7 +259,6 @@ function buildItinerary(stops: TripStop[], legs: RouteLeg[]): DayPlan[] {
   return plans;
 }
 
-
 function packingFor(stops: TripStop[], prefs: TripPreferences) {
   const list = new Set<string>([
     "Passport / ID and a digital copy",
@@ -284,13 +278,15 @@ function packingFor(stops: TripStop[], prefs: TripPreferences) {
   return [...list];
 }
 
-const LUXURY_STEP_DOWN: Record<TripPreferences["luxuryLevel"], TripPreferences["luxuryLevel"] | null> =
-  {
-    luxury: "boutique",
-    boutique: "midscale",
-    midscale: "hostel",
-    hostel: null,
-  };
+const LUXURY_STEP_DOWN: Record<
+  TripPreferences["luxuryLevel"],
+  TripPreferences["luxuryLevel"] | null
+> = {
+  luxury: "boutique",
+  boutique: "midscale",
+  midscale: "hostel",
+  hostel: null,
+};
 
 const LUXURY_LABEL: Record<TripPreferences["luxuryLevel"], string> = {
   luxury: "luxury",
@@ -339,7 +335,9 @@ function buildStretchOptions(context: {
   }
 
   // 2. Replace the most expensive flight with rail.
-  const flight = [...legs].filter((leg) => leg.mode === "flight").sort((a, b) => b.cost - a.cost)[0];
+  const flight = [...legs]
+    .filter((leg) => leg.mode === "flight")
+    .sort((a, b) => b.cost - a.cost)[0];
   if (flight) {
     const railCost = Math.round(flight.cost * 0.62);
     options.push({
@@ -381,7 +379,8 @@ function buildStretchOptions(context: {
       label: `Add 2 nights in ${anchor.name}`,
       detail: "No extra transport — you are already there, and the flights do not change.",
       costDelta: Math.round((nightly * rooms + daily) * 2),
-      tradeoff: "Costs more, but the per-day cost of a longer stay is the lowest of any change here.",
+      tradeoff:
+        "Costs more, but the per-day cost of a longer stay is the lowest of any change here.",
     });
   }
 
@@ -390,7 +389,8 @@ function buildStretchOptions(context: {
     options.push({
       id: "eat-local",
       label: "Swap two restaurant dinners a week for markets",
-      detail: "Set menus at lunch, market dinners in the evening — the pattern locals actually use.",
+      detail:
+        "Set menus at lunch, market dinners in the evening — the pattern locals actually use.",
       costDelta: -Math.round(costBreakdown.food * 0.18),
       tradeoff: "Fewer booked tables, more standing at counters.",
     });
@@ -398,8 +398,6 @@ function buildStretchOptions(context: {
 
   return options;
 }
-
-
 
 export interface OptimiseInput {
   preferences: TripPreferences;
@@ -429,8 +427,8 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
     end = addDaysIso(start, nights);
   }
 
-
-  // A start in the past is fine for a saved trip, but an unusable one is not.
+  // Provider availability APIs cannot search past dates. Preserve the requested
+  // trip length while moving an old draft into a bookable future window.
   if (!start) start = addDaysIso(todayIso(), 30);
   if (!end || nightsBetweenSafe(start, end) === null) {
     end = addDaysIso(start, DEFAULT_TRIP_NIGHTS);
@@ -438,6 +436,11 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
   // Reversed dates: trust the earlier one and rebuild the span.
   if (new Date(end!).getTime() <= new Date(start!).getTime()) {
     end = addDaysIso(start, DEFAULT_TRIP_NIGHTS);
+  }
+  if (start < todayIso()) {
+    const requestedNights = nightsBetweenSafe(start, end) ?? DEFAULT_TRIP_NIGHTS;
+    start = addDaysIso(todayIso(), 30);
+    end = addDaysIso(start, requestedNights);
   }
 
   const nights = nightsBetweenSafe(start, end) ?? DEFAULT_TRIP_NIGHTS;
@@ -447,7 +450,8 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
   return {
     ...base,
     startCity: (base.startCity || "").trim() || SAMPLE_PREFERENCES.startCity,
-    endCity: (base.endCity || "").trim() || (base.startCity || "").trim() || SAMPLE_PREFERENCES.startCity,
+    endCity:
+      (base.endCity || "").trim() || (base.startCity || "").trim() || SAMPLE_PREFERENCES.startCity,
     startDate: start!,
     endDate: end!,
     travellers: clamp(Math.round(base.travellers) || 2, 1, 12),
@@ -468,9 +472,7 @@ export const tripNights = (prefs: TripPreferences) =>
  * A blank end city means the traveller has no fixed destination, so Astera
  * compares destinations instead of optimising around one.
  */
-export const isDiscoveryTrip = (prefs: Partial<TripPreferences>) =>
-  !(prefs.endCity ?? "").trim();
-
+export const isDiscoveryTrip = (prefs: Partial<TripPreferences>) => !(prefs.endCity ?? "").trim();
 
 /** Pure, synchronous city selection — no network, so it can be run up front. */
 function selectCities(
@@ -515,7 +517,6 @@ async function buildRoute(
 ): Promise<TripRoute> {
   const totalNights = tripNights(prefs);
   const nightsPerStop = splitNights(totalNights, chosen.length, prefs.fewerHotelChanges);
-
 
   // --- transport legs -------------------------------------------------
   const waypoints = [
@@ -570,6 +571,14 @@ async function buildRoute(
           nights,
           travellers: prefs.travellers,
           luxuryLevel: prefs.luxuryLevel,
+          checkInDate: addDays(
+            prefs.startDate,
+            nightsPerStop.slice(0, index).reduce((total, value) => total + value, 0),
+          ),
+          checkOutDate: addDays(
+            prefs.startDate,
+            nightsPerStop.slice(0, index + 1).reduce((total, value) => total + value, 0),
+          ),
         }),
         getStopWeather(city.name, city, prefs.startDate),
       ]);
@@ -591,9 +600,8 @@ async function buildRoute(
   // --- cost model ------------------------------------------------------
   const transport = legs.reduce((total, leg) => total + leg.cost, 0);
   const accommodation = stops.reduce((total, stop) => {
-    const rate = estimateNightlyRate(stop.id, prefs.luxuryLevel).nightly;
     const rooms = Math.ceil(prefs.travellers / 2);
-    return total + rate * stop.nights * rooms;
+    return total + stop.hotel.nightlyFrom * stop.nights * rooms;
   }, 0);
   const food = stops.reduce((total, stop) => {
     const city = CITY_BY_ID.get(stop.id);
@@ -624,10 +632,13 @@ async function buildRoute(
       chosen.reduce((total, city) => total + interestFit(city, prefs.interests), 0) / chosen.length,
     ),
   );
-  const efficiency = clamp(Math.round(100 - (journeyHours / Math.max(1, prefs.maxTravelHours)) * 42));
+  const efficiency = clamp(
+    Math.round(100 - (journeyHours / Math.max(1, prefs.maxTravelHours)) * 42),
+  );
   const weatherScore = clamp(
     Math.round(
-      stops.reduce((total, stop) => total + (100 - stop.weather.rainChance * 0.85), 0) / stops.length,
+      stops.reduce((total, stop) => total + (100 - stop.weather.rainChance * 0.85), 0) /
+        stops.length,
     ),
   );
   const budgetRatio = cost / Math.max(1, prefs.budget);
@@ -690,7 +701,6 @@ async function buildRoute(
     },
   ];
 
-
   // --- narrative -------------------------------------------------------
   const gemNames = chosen.filter((c) => c.hiddenGem).map((c) => c.name);
   const reasoning = [
@@ -714,7 +724,6 @@ async function buildRoute(
       ? `We also read your note — "${prefs.notes.trim().slice(0, 140)}" — and kept it in mind when ordering the stops.`
       : "",
   ].filter(Boolean);
-
 
   const dominantMode = legs.reduce<Record<string, number>>((acc, leg) => {
     acc[leg.mode] = (acc[leg.mode] ?? 0) + leg.hours;
@@ -833,7 +842,6 @@ export async function optimiseTripWithDeadline(
   }
 }
 
-
 const GOAL_LABEL: Record<OptimiseGoal, string> = {
   "spend-less": "Spend less",
   "reduce-travel": "Reduce travel",
@@ -849,10 +857,7 @@ export const OPTIMISE_GOALS = (Object.keys(GOAL_LABEL) as OptimiseGoal[]).map((i
 }));
 
 /** Re-runs the engine with a nudged preference set and returns the best match. */
-export async function optimiseFurther(
-  route: TripRoute,
-  goal: OptimiseGoal,
-): Promise<TripRoute> {
+export async function optimiseFurther(route: TripRoute, goal: OptimiseGoal): Promise<TripRoute> {
   const prefs: TripPreferences = { ...route.preferences };
 
   switch (goal) {
@@ -945,5 +950,3 @@ export const SAMPLE_TRIP_PREFERENCES: TripPreferences = {
 /** One-line description of the sample, shown above the results. */
 export const SAMPLE_SUMMARY =
   "Two travellers · 10 nights from London · €5,200 all in · food, nature and photography · boutique stays, no early starts";
-
-

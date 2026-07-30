@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { Utensils } from "lucide-react";
 
 import { AttractionCard } from "@/components/discover/AttractionCard";
@@ -19,6 +20,7 @@ interface DayExperienceGridProps {
  */
 export function DayExperienceGrid({ day, stop, preferences }: DayExperienceGridProps) {
   const [story, setStory] = useState<DayExperience | null>(null);
+  const reduceMotion = useReducedMotion();
   const { slots, restaurant } = useMemo(
     () => buildDayExperiences(day, stop, preferences),
     [day, stop, preferences],
@@ -28,9 +30,19 @@ export function DayExperienceGrid({ day, stop, preferences }: DayExperienceGridP
     return (
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {[day.morning, day.afternoon, day.evening].map((text, index) => (
-          <p key={index} className="rounded-2xl bg-secondary/60 p-4 text-sm leading-relaxed">
+          <motion.p
+            key={index}
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.45,
+              delay: reduceMotion ? 0 : 0.38 + index * 0.12,
+            }}
+            className="rounded-2xl bg-secondary/60 p-4 text-sm leading-relaxed"
+          >
             {text}
-          </p>
+          </motion.p>
         ))}
       </div>
     );
@@ -40,17 +52,28 @@ export function DayExperienceGrid({ day, stop, preferences }: DayExperienceGridP
     <>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
         {slots.map((experience, index) => (
-          <AttractionCard
+          <motion.div
             key={experience.slot}
-            attraction={experience.attraction}
-            index={index}
-            eyebrow={experience.label}
-            hook={experience.hook}
-            tags={experience.tags}
-            variant="compact"
-            onOpen={() => setStory(experience)}
-            className="h-full"
-          />
+            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.5,
+              delay: reduceMotion ? 0 : 0.38 + index * 0.14,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="h-full transition-transform duration-300 hover:-translate-y-1 motion-reduce:transform-none"
+          >
+            <AttractionCard
+              attraction={experience.attraction}
+              index={0}
+              eyebrow={experience.label}
+              hook={experience.hook}
+              tags={experience.tags}
+              onOpen={() => setStory(experience)}
+              className="h-full"
+            />
+          </motion.div>
         ))}
       </div>
 
@@ -77,4 +100,3 @@ export function DayExperienceGrid({ day, stop, preferences }: DayExperienceGridP
     </>
   );
 }
-

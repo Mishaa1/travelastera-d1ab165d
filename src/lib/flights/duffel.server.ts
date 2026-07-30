@@ -13,7 +13,8 @@ import { MAX_OFFERS_PER_ROUTE } from "@/lib/flights/types";
  * raw Duffel payload is deliberately not exposed to the frontend.
  */
 
-const DUFFEL_URL = "https://api.duffel.com/air/offer_requests?return_offers=true&supplier_timeout=8000";
+const DUFFEL_URL =
+  "https://api.duffel.com/air/offer_requests?return_offers=true&supplier_timeout=8000";
 const REQUEST_TIMEOUT_MS = 12_000;
 
 interface DuffelSegment {
@@ -35,6 +36,7 @@ interface DuffelOffer {
   total_amount: string;
   total_currency: string;
   expires_at?: string;
+  live_mode: boolean;
   owner?: { name?: string; logo_symbol_url?: string };
   slices: DuffelSlice[];
 }
@@ -55,7 +57,7 @@ function baggageSummary(slice: DuffelSlice): string | undefined {
   return `${carry} cabin · ${checked} checked`;
 }
 
-function normalise(offer: DuffelOffer, cabin: string, test: boolean): NormalisedFlightOffer | null {
+function normalise(offer: DuffelOffer, cabin: string): NormalisedFlightOffer | null {
   const outbound = offer.slices[0];
   const inbound = offer.slices[1];
   const first = outbound?.segments[0];
@@ -65,20 +67,14 @@ function normalise(offer: DuffelOffer, cabin: string, test: boolean): Normalised
   const total = Number(offer.total_amount);
   if (!Number.isFinite(total)) return null;
 
-  const totalDuration = offer.slices.reduce(
-    (sum, slice) =>
-      sum +
-      (durationMinutes(slice.duration) ||
-        Math.max(
-          0,
-          Math.round(
-            (new Date(slice.segments[slice.segments.length - 1]!.arriving_at).getTime() -
-              new Date(slice.segments[0]!.departing_at).getTime()) /
-              60000,
-          ),
-        )),
-    0,
-  );
+  const outboundDuration =
+    durationMinutes(outbound.duration) ||
+    Math.max(
+      0,
+      Math.round(
+        (new Date(last.arriving_at).getTime() - new Date(first.departing_at).getTime()) / 60000,
+      ),
+    );
 
   return {
     provider: "duffel",
@@ -94,13 +90,20 @@ function normalise(offer: DuffelOffer, cabin: string, test: boolean): Normalised
     airlineName: offer.owner?.name ?? first.marketing_carrier?.name ?? "Airline",
     airlineLogoUrl: offer.owner?.logo_symbol_url ?? first.marketing_carrier?.logo_symbol_url,
     stops: Math.max(0, outbound.segments.length - 1),
-    durationMinutes: totalDuration,
+    durationMinutes: outboundDuration,
     cabin,
     baggageSummary: baggageSummary(outbound),
     expiresAt: offer.expires_at,
     checkedAt: new Date().toISOString(),
-    status: test ? "test" : "live",
+    status: offer.live_mode ? "live" : "test",
   };
+}
+
+export class DuffelProviderError extends Error {
+  constructor(readonly status: number) {
+    super(`Duffel request failed with status ${status}`);
+    this.name = "DuffelProviderError";
+  }
 }
 
 export const duffelProvider: FlightProvider = {
@@ -157,15 +160,13 @@ export const duffelProvider: FlightProvider = {
       if (!response.ok) {
         const body = await response.text();
         console.error(`Duffel request failed [${response.status}]: ${body.slice(0, 500)}`);
-        throw new Error(`Duffel request failed with status ${response.status}`);
+        throw new DuffelProviderError(response.status);
       }
 
       const payload = (await response.json()) as { data?: { offers?: DuffelOffer[] } };
       const offers = payload.data?.offers ?? [];
-      const test = token.startsWith("duffel_test");
-
       return offers
-        .map((offer) => normalise(offer, cabin, test))
+        .map((offer) => normalise(offer, cabin))
         .filter((offer): offer is NormalisedFlightOffer => offer !== null)
         .sort((a, b) => a.totalAmount - b.totalAmount)
         .slice(0, MAX_OFFERS_PER_ROUTE);

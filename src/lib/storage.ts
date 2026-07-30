@@ -9,7 +9,6 @@ const KEYS = {
   searches: "safara.saved-searches.v1",
 } as const;
 
-
 const isBrowser = () => typeof window !== "undefined";
 
 function read<T>(key: string, fallback: T): T {
@@ -46,7 +45,8 @@ export const savedTripsStore = {
       savedAt: new Date().toISOString(),
       route,
     };
-    const next = existing >= 0 ? trips.map((t, i) => (i === existing ? entry : t)) : [entry, ...trips];
+    const next =
+      existing >= 0 ? trips.map((t, i) => (i === existing ? entry : t)) : [entry, ...trips];
     write(KEYS.saved, next);
     return next;
   },
@@ -161,6 +161,23 @@ export function findRouteById(id: string): TripRoute | undefined {
     resultsStore.get().find((route) => route.id === id) ??
     savedTripsStore.all().find((trip) => trip.route.id === id)?.route
   );
+}
+
+/** Updates a generated route wherever it already lives without creating a new record. */
+export function persistRoute(route: TripRoute) {
+  const results = resultsStore.get();
+  if (results.some((item) => item.id === route.id)) {
+    resultsStore.set(results.map((item) => (item.id === route.id ? route : item)));
+  }
+
+  const saved = savedTripsStore.all();
+  const savedTrip = saved.find((trip) => trip.route.id === route.id);
+  if (savedTrip) {
+    write(
+      KEYS.saved,
+      saved.map((trip) => (trip.id === savedTrip.id ? { ...trip, route } : trip)),
+    );
+  }
 }
 
 export function subscribeToStorage(listener: () => void) {

@@ -6,42 +6,37 @@ const STEPS = [
   {
     Icon: Wallet,
     title: "Tell us the essentials",
-    body: "Dates, start city, budget and how you like to travel. Nine inputs, no destination required.",
+    body: "The budget, the dates and the people. Constraints—not a destination and not a finished itinerary.",
   },
   {
     Icon: Cpu,
-    title: "Astera searches, quietly",
-    body: "Thousands of routes priced end to end through transport, accommodation and daily spend — scored against your constraints.",
+    title: "ASTERA weighs the possibilities",
+    body: "Routes, stays, travel time, weather and shared preferences are considered together, quietly.",
   },
   {
     Icon: Route,
-    title: "One trip, worth taking",
-    body: "Four ranked routes with the reasoning behind each. Adjust anything, and the numbers update instantly.",
+    title: "Get the trip worth taking",
+    body: "A clear recommendation, the reasons it won and a practical path from decision to booking.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-7xl px-5 py-28 md:px-8 md:py-40">
+    <section className="mx-auto max-w-7xl px-5 py-20 md:px-8 md:py-28">
       <Reveal className="max-w-2xl">
         <p className="text-[11px] font-semibold tracking-[0.2em] text-teal uppercase">
-          How it works
+          How little you have to do
         </p>
         <h2 className="mt-5 font-display text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.02] font-medium tracking-[-0.02em]">
-          Three inputs in. One optimised trip out.
+          You bring the essentials. ASTERA carries the decisions.
         </h2>
       </Reveal>
 
-      <ol className="mt-16 grid gap-px overflow-hidden rounded-4xl border border-border bg-border md:grid-cols-3">
+      <ol className="mt-14 grid gap-10 md:grid-cols-3 md:gap-14">
         {STEPS.map((step, index) => (
-          <Reveal
-            as="li"
-            key={step.title}
-            delay={index * 0.08}
-            className="hover-navy group relative bg-card p-8 md:p-10"
-          >
+          <Reveal as="li" key={step.title} delay={index * 0.08} className="group relative">
             <div className="flex items-start justify-between">
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/8 text-primary">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-primary/8 text-primary">
                 <step.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
               </span>
               <span className="font-display text-xs font-medium tracking-[0.18em] text-muted-foreground/70 uppercase">
@@ -51,9 +46,7 @@ export function HowItWorks() {
             <h3 className="mt-8 font-display text-2xl font-medium tracking-[-0.01em]">
               {step.title}
             </h3>
-            <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">
-              {step.body}
-            </p>
+            <p className="mt-3 text-[15px] leading-[1.65] text-muted-foreground">{step.body}</p>
           </Reveal>
         ))}
       </ol>

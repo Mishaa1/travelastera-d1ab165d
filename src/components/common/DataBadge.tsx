@@ -9,6 +9,11 @@ const STYLES = {
     className: "bg-emerald/12 text-emerald border-emerald/30",
     Icon: Radio,
   },
+  test: {
+    label: "Sandbox price",
+    className: "bg-teal/12 text-teal border-teal/30",
+    Icon: Radio,
+  },
   estimate: {
     label: "Estimated",
     className: "bg-teal/12 text-teal border-teal/30",
@@ -21,7 +26,6 @@ const STYLES = {
   },
 } as const;
 
-
 interface DataBadgeProps {
   quality: DataQuality;
   className?: string;
@@ -32,6 +36,8 @@ interface DataBadgeProps {
 export function DataBadge({ quality, className, showProvider = false }: DataBadgeProps) {
   const style = STYLES[quality.source];
   const Icon = style.Icon;
+  const label =
+    quality.source === "live" && quality.provider === "Hotelbeds" ? "Live hotel data" : style.label;
   return (
     <span
       className={cn(
@@ -39,11 +45,13 @@ export function DataBadge({ quality, className, showProvider = false }: DataBadg
         style.className,
         className,
       )}
-      title={`${style.label} · ${quality.provider}`}
+      title={`${label} · ${quality.provider}`}
     >
       <Icon className="h-3 w-3" aria-hidden />
-      {style.label}
-      {showProvider && <span className="font-normal normal-case opacity-70">· {quality.provider}</span>}
+      {label}
+      {showProvider && (
+        <span className="font-normal normal-case opacity-70">· {quality.provider}</span>
+      )}
     </span>
   );
 }

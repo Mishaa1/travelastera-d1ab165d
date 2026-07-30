@@ -16,6 +16,7 @@ import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TripTripIdRouteImport } from './routes/trip.$tripId'
 import { Route as ApiFlightsSearchRouteImport } from './routes/api/flights/search'
+import { Route as ApiHotelsSearchRouteImport } from './routes/api/hotels/search'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ApiFlightsSearchRoute = ApiFlightsSearchRouteImport.update({
   path: '/api/flights/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHotelsSearchRoute = ApiHotelsSearchRouteImport.update({
+  id: '/api/hotels/search',
+  path: '/api/hotels/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip/$tripId': typeof TripTripIdRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
+  '/api/hotels/search': typeof ApiHotelsSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip/$tripId': typeof TripTripIdRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
+  '/api/hotels/search': typeof ApiHotelsSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trip/$tripId': typeof TripTripIdRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
+  '/api/hotels/search': typeof ApiHotelsSearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/trip/$tripId'
     | '/api/flights/search'
+    | '/api/hotels/search'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/trip/$tripId'
     | '/api/flights/search'
+    | '/api/hotels/search'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/trip/$tripId'
     | '/api/flights/search'
+    | '/api/hotels/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TripTripIdRoute: typeof TripTripIdRoute
   ApiFlightsSearchRoute: typeof ApiFlightsSearchRoute
+  ApiHotelsSearchRoute: typeof ApiHotelsSearchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFlightsSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hotels/search': {
+      id: '/api/hotels/search'
+      path: '/api/hotels/search'
+      fullPath: '/api/hotels/search'
+      preLoaderRoute: typeof ApiHotelsSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TripTripIdRoute: TripTripIdRoute,
   ApiFlightsSearchRoute: ApiFlightsSearchRoute,
+  ApiHotelsSearchRoute: ApiHotelsSearchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,13 +1,13 @@
-import { API_CONFIG, ESTIMATE_QUALITY, LIVE_QUALITY } from "@/api/config";
-import { apiGet } from "@/api/http";
+import { ESTIMATE_QUALITY } from "@/api/config";
 import { distanceKm } from "@/services/geocodeService";
 import type { DataQuality, GeoPoint } from "@/lib/types";
 
 /**
  * Flight pricing service.
  *
- * Shaped after the Amadeus Self-Service `shopping/flight-offers` contract so the
- * mock can be swapped for the live call by adding VITE_AMADEUS_API_KEY.
+ * Route construction deliberately uses a deterministic estimate. Fresh Duffel
+ * offers are fetched through the server-only `/api/flights/search` route once
+ * the optimiser has selected its best route.
  */
 
 export interface FlightSearchParams {
@@ -28,12 +28,6 @@ export interface FlightOffer {
   quality: DataQuality;
 }
 
-interface AmadeusOffer {
-  id: string;
-  price: { total: string };
-  itineraries: { duration: string; segments: { carrierCode: string }[] }[];
-}
-
 const CARRIERS = ["Aeris", "Nordwing", "Vueling", "Iberia Express", "Transavia"];
 
 function hashString(value: string): number {
@@ -47,7 +41,8 @@ function estimateOffer(params: FlightSearchParams): FlightOffer {
   const seed = hashString(`${params.origin.name}${params.destination.name}${params.date}`);
   const base = 38 + km * 0.072;
   const variance = ((seed % 23) - 11) * 1.8;
-  const cabinFactor = params.cabin === "BUSINESS" ? 2.9 : params.cabin === "PREMIUM_ECONOMY" ? 1.6 : 1;
+  const cabinFactor =
+    params.cabin === "BUSINESS" ? 2.9 : params.cabin === "PREMIUM_ECONOMY" ? 1.6 : 1;
   const pricePerTraveller = Math.max(29, Math.round((base + variance) * cabinFactor));
   const durationHours = Math.round((0.9 + km / 720) * 10) / 10;
 
@@ -63,38 +58,7 @@ function estimateOffer(params: FlightSearchParams): FlightOffer {
 }
 
 export async function searchFlights(params: FlightSearchParams): Promise<FlightOffer> {
-  if (!API_CONFIG.flights.enabled) return estimateOffer(params);
-
-  try {
-    const data = await apiGet<{ data: AmadeusOffer[] }>(
-      `${API_CONFIG.flights.baseUrl}/shopping/flight-offers`,
-      {
-        query: {
-          originLocationCode: params.origin.name.slice(0, 3).toUpperCase(),
-          destinationLocationCode: params.destination.name.slice(0, 3).toUpperCase(),
-          departureDate: params.date,
-          adults: params.travellers,
-          travelClass: params.cabin ?? "ECONOMY",
-          max: 1,
-        },
-        headers: { Authorization: `Bearer ${API_CONFIG.flights.apiKey}` },
-      },
-    );
-    const offer = data.data?.[0];
-    if (!offer) return estimateOffer(params);
-    const total = Number(offer.price.total);
-    return {
-      id: offer.id,
-      carrier: offer.itineraries[0]?.segments[0]?.carrierCode ?? "—",
-      pricePerTraveller: Math.round(total / params.travellers),
-      totalPrice: Math.round(total),
-      durationHours: 2,
-      stops: Math.max(0, (offer.itineraries[0]?.segments.length ?? 1) - 1),
-      quality: LIVE_QUALITY(API_CONFIG.flights.provider),
-    };
-  } catch {
-    return estimateOffer(params);
-  }
+  return estimateOffer(params);
 }
 
 /** Ground transport estimate used when the optimiser prefers rail or road. */

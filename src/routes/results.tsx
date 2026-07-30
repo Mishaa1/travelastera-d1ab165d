@@ -52,7 +52,6 @@ const STAGES = [
   "Ranking your best routes",
 ];
 
-
 type RunState = "idle" | "loading" | "done" | "timeout" | "error";
 
 const ROUTE_COUNT_WORD: Record<number, string> = {
@@ -64,8 +63,6 @@ const ROUTE_COUNT_WORD: Record<number, string> = {
 
 const RANK_LABEL = ["Best overall", "Runner-up", "Third", "Fourth"] as const;
 
-
-
 function ResultsPage() {
   const { sample } = Route.useSearch();
   const { preferences, hydrated } = useTripDraft();
@@ -75,7 +72,9 @@ function ResultsPage() {
   const [state, setState] = useState<RunState>("loading");
   const [stage, setStage] = useState(0);
   const [compareIds, setCompareIds] = useState<string[]>([]);
-  const [optimising, setOptimising] = useState<{ routeId: string; goal: OptimiseGoal } | null>(null);
+  const [optimising, setOptimising] = useState<{ routeId: string; goal: OptimiseGoal } | null>(
+    null,
+  );
   const [panelRoute, setPanelRoute] = useState<TripRoute | null>(null);
   const runId = useRef(0);
 
@@ -120,7 +119,6 @@ function ResultsPage() {
     if (!sample && !hydrated) return;
     void run();
   }, [sample, hydrated, run]);
-
 
   const handleOptimise = async (route: TripRoute, goal: OptimiseGoal) => {
     setOptimising({ routeId: route.id, goal });
@@ -203,7 +201,6 @@ function ResultsPage() {
               </span>
             </div>
           )}
-
         </div>
       </div>
 
@@ -249,50 +246,49 @@ function ResultsPage() {
               ))}
             </div>
           </div>
-
         ) : routes.length === 0 ? (
           <EmptyState state={state} onRetry={() => void run()} />
         ) : (
-          <div className="grid gap-6 lg:grid-cols-2">
-            {routes.map((route, index) => (
-              <div key={route.id} className="flex flex-col">
-                <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-                  <span
-                    className={cn(
-                      "grid h-5 w-5 place-items-center rounded-full text-[10px]",
-                      index === 0
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-foreground",
-                    )}
-                  >
-                    {index + 1}
-                  </span>
-                  {RANK_LABEL[index] ?? `Option ${index + 1}`} · score{" "}
-                  {Math.round(route.scores.overall)}
-                </p>
-                <TripCard
-                  route={route}
-                  index={index}
-                  saved={isSaved(route.id)}
-                  compared={compareIds.includes(route.id)}
-                  onSave={(item) => {
-                    const added = toggle(item);
-                    toast.success(added ? "Saved to your trips" : "Removed from saved");
-                  }}
-                  onCompare={toggleCompare}
-                  onOptimise={(item) => setPanelRoute(item)}
-                />
+          <>
+            {best && (
+              <div className="mb-8">
+                <FlightOffers route={best} enabled={!best.preferences.avoidFlights} />
               </div>
-            ))}
-          </div>
+            )}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {routes.map((route, index) => (
+                <div key={route.id} className="flex flex-col">
+                  <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                    <span
+                      className={cn(
+                        "grid h-5 w-5 place-items-center rounded-full text-[10px]",
+                        index === 0
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-foreground",
+                      )}
+                    >
+                      {index + 1}
+                    </span>
+                    {RANK_LABEL[index] ?? `Option ${index + 1}`} · score{" "}
+                    {Math.round(route.scores.overall)}
+                  </p>
+                  <TripCard
+                    route={route}
+                    index={index}
+                    saved={isSaved(route.id)}
+                    compared={compareIds.includes(route.id)}
+                    onSave={(item) => {
+                      const added = toggle(item);
+                      toast.success(added ? "Saved to your trips" : "Removed from saved");
+                    }}
+                    onCompare={toggleCompare}
+                    onOptimise={(item) => setPanelRoute(item)}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
-
-        {!loading && best && !sample && (
-          <div className="mt-8">
-            <FlightOffers route={best} enabled={!best.preferences.avoidFlights} />
-          </div>
-        )}
-
 
         <AnimatePresence>
           {panelRoute && (
@@ -371,4 +367,3 @@ function EmptyState({ state, onRetry }: { state: RunState; onRetry: () => void }
     </div>
   );
 }
-

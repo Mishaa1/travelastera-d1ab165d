@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { duffelProvider } from "@/lib/flights/duffel.server";
-import { MAX_DISCOVERY_DESTINATIONS } from "@/lib/flights/types";
+import { DuffelProviderError, duffelProvider } from "@/lib/flights/duffel.server";
+import { MAX_DISCOVERY_DESTINATIONS, type NormalisedFlightOffer } from "@/lib/flights/types";
 
 /**
  * POST /api/flights/search
@@ -74,14 +74,14 @@ export const Route = createFileRoute("/api/flights/search")({
         // Small fan-out, run two at a time so we never hammer the provider.
         const results: {
           destination: string;
-          offers: unknown[];
+          offers: NormalisedFlightOffer[];
           error?: string;
-        }[] = [];
+        }[] = destinations.map((destination) => ({ destination, offers: [] }));
 
-        const queue = [...destinations];
+        const queue = destinations.map((destination, index) => ({ destination, index }));
         const worker = async () => {
           while (queue.length) {
-            const destination = queue.shift()!;
+            const { destination, index } = queue.shift()!;
             try {
               const offers = await duffelProvider.search({
                 origin,
@@ -91,14 +91,17 @@ export const Route = createFileRoute("/api/flights/search")({
                 travellers,
                 cabin,
               });
-              results.push({ destination, offers });
+              results[index] = { destination, offers };
             } catch (error) {
               console.error("Flight search failed", destination, error);
-              results.push({
+              results[index] = {
                 destination,
                 offers: [],
-                error: "Provider unavailable",
-              });
+                error:
+                  error instanceof DuffelProviderError
+                    ? `Duffel test search failed (${error.status})`
+                    : "Duffel test search unavailable",
+              };
             }
           }
         };

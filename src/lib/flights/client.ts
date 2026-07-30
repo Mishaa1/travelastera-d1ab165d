@@ -77,8 +77,11 @@ export async function searchFlightOffers(
     });
     const payload = (await response.json()) as Partial<FlightLookup> & { error?: string };
     if (!response.ok) return { ...EMPTY, error: payload.error ?? "Flight search failed" };
+    if (!Array.isArray(payload.results)) {
+      return { ...EMPTY, error: "Flight search returned an invalid response" };
+    }
     return {
-      results: payload.results ?? [],
+      results: payload.results,
       configured: Boolean(payload.configured),
       error: payload.error,
     };

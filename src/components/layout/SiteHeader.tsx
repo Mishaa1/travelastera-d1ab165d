@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,20 @@ const NAV = [
   { to: "/saved", label: "Saved" },
 ] as const;
 
+const LANDING_NAV = [
+  { to: "/", label: "Home" },
+  { to: "/plan", label: "How it works" },
+  { to: "/results", label: "Trips" },
+  { to: "/saved", label: "Saved" },
+] as const;
 
-export function SiteHeader() {
+export function SiteHeader({ landing = false }: { landing?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
   const blur = useTransform(scrollY, [0, 120], [0, 1]);
+  useMotionValueEvent(scrollY, "change", (latest) => setScrolled(latest > 72));
+  const lightOnHero = landing && !scrolled && !open;
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -29,16 +38,25 @@ export function SiteHeader() {
       />
       <div className="relative mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 md:h-20 md:px-8">
         <Link to="/" className="flex min-w-0 items-center" aria-label="Astera home">
-          <Wordmark withMark size="md" className="text-foreground" />
+          <Wordmark
+            withMark={!landing}
+            size="md"
+            className={lightOnHero ? "text-white" : "text-foreground"}
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
-          {NAV.map((item) => (
+          {(landing ? LANDING_NAV : NAV).map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-250 hover:bg-aegean hover:text-primary-foreground"
-              activeProps={{ className: "text-foreground bg-secondary" }}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-medium transition-colors duration-250 hover:bg-aegean hover:text-primary-foreground",
+                lightOnHero ? "text-white/80" : "text-muted-foreground",
+              )}
+              activeProps={{
+                className: lightOnHero ? "text-white" : "text-foreground bg-secondary",
+              }}
               activeOptions={{ exact: item.to === "/" }}
             >
               {item.label}
@@ -48,7 +66,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <Button asChild variant="hero" size="sm" className="hidden sm:inline-flex">
-            <Link to="/plan">Optimise a trip</Link>
+            <Link to="/plan">{landing ? "Plan your trip" : "Optimise a trip"}</Link>
           </Button>
           <button
             type="button"

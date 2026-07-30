@@ -1,315 +1,199 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, BedDouble, CloudSun, Compass, PlaneTakeoff, Sparkles } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { ArrowRight, Check, Compass, Plane } from "lucide-react";
 import { useRef } from "react";
 
 import heroImage from "@/assets/hero-satellite.png";
+import coastImage from "@/assets/dest-aegean.jpg";
+import cityImage from "@/assets/dest-iberia.jpg";
+import mountainImage from "@/assets/dest-alps.jpg";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
-import { TravelPaths } from "@/components/common/TravelPaths";
-import { Wordmark } from "@/components/layout/Wordmark";
 import { PlaceSearch } from "@/components/common/PlaceSearch";
+import { TravelPaths } from "@/components/common/TravelPaths";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useTripDraft } from "@/hooks/useTripDraft";
-import { formatCurrency, nightsBetween } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { isDiscoveryTrip } from "@/services/tripOptimizer";
 
-const TRUST_ITEMS = [
-  { Icon: Sparkles, label: "AI-powered planning" },
-  { Icon: PlaneTakeoff, label: "Flights" },
-  { Icon: BedDouble, label: "Hotels" },
-  { Icon: CloudSun, label: "Weather" },
-  { Icon: Compass, label: "Experiences" },
-] as const;
-
-
+const STYLES = ["relaxed", "balanced", "adventure"] as const;
 
 export function Hero() {
   const navigate = useNavigate();
   const { preferences, update } = useTripDraft();
+  const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
-
-  const nights = nightsBetween(preferences.startDate, preferences.endDate);
-  const discovery = isDiscoveryTrip(preferences);
-  const datesReady =
-    preferences.dateMode === "flexible"
-      ? Boolean(preferences.flexibleMonth) && preferences.flexibleNights >= 2
-      : Boolean(preferences.startDate && preferences.endDate);
-  const canContinue = Boolean(preferences.startCity.trim()) && datesReady && preferences.budget > 0;
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "7%"]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1.02, 1.075]);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-[oklch(0.14_0.04_250)]">
-      {/* Satellite backdrop -------------------------------------------------- */}
-      <motion.div style={{ y: imageY }} className="absolute inset-0 z-0">
+    <section
+      ref={sectionRef}
+      className="relative min-h-[760px] overflow-hidden bg-[#020916] text-white lg:min-h-[820px]"
+    >
+      <motion.div
+        style={reduceMotion ? undefined : { y: imageY, scale: imageScale }}
+        className="absolute inset-0 origin-center"
+      >
         <img
           src={heroImage}
-          alt="Satellite view of Europe at night with glowing city lights and travel routes"
+          alt="Earth at night with Europe illuminated"
           width={1672}
           height={941}
           fetchPriority="high"
-          className="h-[110%] w-full object-cover object-[55%_38%] brightness-[1.5] contrast-[1.08] saturate-[1.1]"
+          className="h-[108%] w-full object-cover object-[57%_40%] brightness-[1.3] contrast-[1.12] saturate-[1.05]"
         />
-        {/* Left-side ink wash for typographic contrast, right stays open. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/70 via-[oklch(0.14_0.04_250)]/15 to-transparent" />
-        {/* Soft breathing city glow over the densest cluster of lights. */}
-        <div className="city-glow pointer-events-none absolute top-[22%] left-[46%] h-[46vh] w-[46vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.14_80/0.35)_0%,transparent_65%)] blur-2xl" />
-        <div
-          className="city-glow pointer-events-none absolute top-[46%] left-[70%] h-[30vh] w-[30vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.85_0.12_200/0.28)_0%,transparent_65%)] blur-2xl"
-          style={{ animationDelay: "2.5s" }}
-        />
-        {/* Natural fade into the warm parchment page background. */}
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#020916] via-[#020916]/35 to-[#020916]/5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020916]/45 via-transparent to-[#020916]/25" />
       </motion.div>
+      <TravelPaths className="pointer-events-none absolute inset-0 h-full w-full opacity-35" />
 
-      {/* Animated travel paths between glowing city nodes */}
-      <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 z-[1] h-[70%] w-full opacity-40" />
-
-
-
-      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
-        {/* Editorial copy ------------------------------------------------------ */}
-        <div className="max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-wrap items-center gap-x-5 gap-y-3"
-          >
-            <Wordmark withMark size="lg" className="text-primary-foreground" />
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-[oklch(0.14_0.04_250)]/40 px-3.5 py-1.5 text-[11px] font-medium tracking-[0.14em] text-primary-foreground/85 uppercase backdrop-blur-sm"
-          >
-            <Sparkles className="h-3 w-3" aria-hidden />
-            Intelligent travel operating system
-          </motion.p>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-7 font-serif-display text-[clamp(3rem,7.2vw,5.75rem)] leading-[0.95] font-light tracking-[-0.02em] text-primary-foreground"
-          >
-            See how far your{" "}
-            <span className="italic text-[oklch(0.88_0.11_84)]">budget</span> can take you.
-          </motion.h1>
-
-
-          <motion.p
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-7 max-w-xl text-lg leading-[1.65] text-primary-foreground/80"
-          >
-            Tell us your budget, dates and travel style. We'll build the
-            journeys worth taking.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            transition={{ duration: 1.2, delay: 0.5 }}
-            className="meander mt-9 max-w-sm text-primary-foreground"
-            aria-hidden
-          />
-        </div>
-
-        {/* Conversational search panel ---------------------------------------- */}
+      <div className="relative mx-auto grid min-h-[760px] max-w-7xl items-center gap-12 px-5 pt-28 pb-16 md:px-8 lg:min-h-[820px] lg:grid-cols-[1.05fr_.75fr] lg:gap-24 lg:pt-24">
         <motion.div
-          initial={{ opacity: 0, y: 32 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className="relative self-end"
+          transition={{ duration: reduceMotion ? 0 : 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-xl"
         >
-          <div className="glass-panel rounded-[24px] p-6 transition-shadow duration-500 sm:p-8">
-            <p className="font-serif-display text-2xl leading-snug text-foreground">
-              I'm travelling from{" "}
-              <span className="text-muted-foreground/60">…</span>
-            </p>
+          <h1 className="font-serif-display text-[clamp(3.7rem,7vw,6.2rem)] leading-[0.88] font-light tracking-[-0.035em]">
+            See how far
+            <br />
+            your <em className="text-[#e9b45d]">budget</em> can
+            <br />
+            take you.
+          </h1>
+          <p className="mt-7 max-w-md text-lg leading-relaxed text-white/76">
+            AI trip planning that balances your dreams with your budget.
+          </p>
 
-
-            <div className="mt-5 space-y-5">
-              <div>
-                <Label htmlFor="hero-start" className="sr-only">
-                  Starting from
-                </Label>
-                <PlaceSearch
-                  id="hero-start"
-                  size="lg"
-                  icon="plane"
-                  value={preferences.startCity}
-                  onChange={(value: string) => update("startCity", value)}
-                  placeholder="City or airport"
-                />
-              </div>
-
-              <div className="rule-soft pt-5">
-                <p className="font-display text-base leading-snug text-foreground">
-                  heading to{" "}
-                  <span className="text-muted-foreground/60">
-                    {preferences.endCity ? "" : "wherever's best"}
-                  </span>
-                </p>
-                <PlaceSearch
-                  className="mt-3"
-                  id="hero-end"
-                  size="lg"
-                  icon="pin"
-                  value={preferences.endCity}
-                  onChange={(value: string) => update("endCity", value)}
-                  placeholder="Leave blank — Astera will discover destinations"
-                />
-              </div>
-
-              <div className="rule-soft pt-5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-display text-base leading-snug text-foreground">
-                    around these dates
-                  </p>
-                  <div className="flex gap-0.5 rounded-full bg-secondary p-0.5 text-xs">
-                    {(["exact", "flexible"] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        aria-pressed={preferences.dateMode === mode}
-                        onClick={() => update("dateMode", mode)}
-                        className={cn(
-                          "rounded-full px-3 py-1 font-medium capitalize transition-colors",
-                          preferences.dateMode === mode
-                            ? "bg-card text-foreground shadow-soft"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        {mode}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {preferences.dateMode === "exact" ? (
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <Input
-                      type="date"
-                      aria-label="Leaving"
-                      value={preferences.startDate}
-                      onChange={(event) => update("startDate", event.target.value)}
-                      className="h-12 rounded-2xl"
-                    />
-                    <Input
-                      type="date"
-                      aria-label="Returning"
-                      value={preferences.endDate}
-                      onChange={(event) => update("endDate", event.target.value)}
-                      className="h-12 rounded-2xl"
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <Input
-                      type="month"
-                      aria-label="Month"
-                      value={preferences.flexibleMonth}
-                      onChange={(event) => update("flexibleMonth", event.target.value)}
-                      className="h-12 rounded-2xl"
-                    />
-                    <Input
-                      type="number"
-                      min={2}
-                      max={30}
-                      aria-label="Nights"
-                      value={preferences.flexibleNights}
-                      onChange={(event) =>
-                        update("flexibleNights", Math.max(2, Math.min(30, Number(event.target.value) || 7)))
-                      }
-                      className="h-12 rounded-2xl"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="rule-soft pt-5">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-display text-base leading-snug text-foreground">
-                    with a budget of
-                  </p>
-                  <span className="font-display text-2xl font-medium tabular-nums tracking-[-0.01em]">
-                    <AnimatedCounter
-                      value={preferences.budget}
-                      duration={0.4}
-                      format={(value) => formatCurrency(value, preferences.currency)}
-                    />
-                  </span>
-                </div>
-                <Slider
-                  className="mt-5"
-                  min={400}
-                  max={9000}
-                  step={100}
-                  value={[preferences.budget]}
-                  onValueChange={([value]) => update("budget", value)}
-                  aria-label="Total trip budget"
-                />
-              </div>
+          <div className="mt-8 flex items-center gap-3 text-xs text-white/68">
+            <div className="flex -space-x-2" aria-hidden>
+              {["👩", "👨", "👩🏽", "👨🏾"].map((person, index) => (
+                <span
+                  key={index}
+                  className="grid h-8 w-8 place-items-center rounded-full border-2 border-[#081423] bg-white text-sm"
+                >
+                  {person}
+                </span>
+              ))}
             </div>
+            <span>One calm answer for the whole group</span>
+          </div>
 
-            <Button
-              size="xl"
-              variant="hero"
-              disabled={!canContinue}
-              className="mt-8 w-full rounded-full text-base font-semibold shadow-lift"
-              onClick={() => navigate({ to: "/plan" })}
-            >
-              Personalise my trip
-              <ArrowRight aria-hidden />
-            </Button>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-              <span>Takes about a minute · {nights} nights</span>
-              <Link
-                to="/results"
-                search={{ sample: true }}
-                className="font-medium text-foreground/80 underline-offset-4 hover:underline"
+          <div className="mt-8 grid max-w-lg grid-cols-3 gap-3">
+            {[
+              ["Portugal", cityImage],
+              ["The Aegean", coastImage],
+              ["The Alps", mountainImage],
+            ].map(([label, image], index) => (
+              <motion.div
+                key={label}
+                whileHover={reduceMotion ? undefined : { y: -4 }}
+                transition={{ duration: 0.3 }}
+                className="group relative h-28 overflow-hidden rounded-2xl border border-white/15 shadow-2xl sm:h-32"
               >
-                Try a sample trip →
-              </Link>
-            </div>
-
-            <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">
-              {discovery
-                ? "Astera will compare destinations that fit your budget and preferences."
-                : `We'll optimise flights, schedule and experiences around ${preferences.endCity.trim()}.`}
-            </p>
+                <img
+                  src={image}
+                  alt=""
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
+                <span className="absolute bottom-3 left-3 text-sm font-semibold">{label}</span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
-      </div>
 
-      {/* Trust row ----------------------------------------------------------- */}
-      <div className="relative z-10 border-t border-primary-foreground/10 bg-[oklch(0.14_0.04_250)]/45 backdrop-blur-sm">
-        <ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-5 py-6 md:px-8">
-          {TRUST_ITEMS.map((item, index) => (
-            <motion.li
-              key={item.label}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 + index * 0.07, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-center gap-2 text-[12px] font-medium tracking-[0.12em] text-primary-foreground/70 uppercase"
-            >
-              <item.Icon className="h-3.5 w-3.5 text-[oklch(0.85_0.11_84)]" strokeWidth={1.6} aria-hidden />
-              {item.label}
-            </motion.li>
-          ))}
-        </ul>
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.9, delay: reduceMotion ? 0 : 0.15 }}
+          className="rounded-[1.8rem] border border-white/30 bg-white/[0.17] p-6 shadow-[0_35px_90px_rgba(0,0,0,.4),inset_0_1px_rgba(255,255,255,.22)] backdrop-blur-2xl sm:p-7"
+        >
+          <h2 className="font-display text-lg font-semibold">Where do you want to go?</h2>
+          <p className="mt-1 text-xs text-white/65">
+            Tell us your budget and travel style. We’ll handle the rest.
+          </p>
+
+          <div className="mt-6 rounded-2xl bg-white p-1 text-foreground shadow-soft">
+            <PlaceSearch
+              id="hero-destination"
+              icon="plane"
+              value={preferences.endCity}
+              onChange={(value: string) => update("endCity", value)}
+              placeholder="Lisbon, Portugal"
+              className="border-0 bg-transparent shadow-none"
+            />
+          </div>
+
+          <div className="mt-6">
+            <p className="text-xs text-white/65">Total budget</p>
+            <p className="mt-1 font-display text-3xl font-semibold">
+              <AnimatedCounter
+                value={preferences.budget}
+                duration={0.35}
+                format={(value) => formatCurrency(value, preferences.currency)}
+              />
+            </p>
+            <Slider
+              min={400}
+              max={9000}
+              step={100}
+              value={[preferences.budget]}
+              onValueChange={([value]) => update("budget", value)}
+              className="mt-4"
+              aria-label="Total trip budget"
+            />
+            <div className="mt-2 flex justify-between text-[10px] text-white/48">
+              <span>€400</span>
+              <span>€9,000+</span>
+            </div>
+          </div>
+
+          <fieldset className="mt-5">
+            <legend className="text-xs text-white/65">Travel style</legend>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {STYLES.map((style) => {
+                const selected = preferences.travelStyle === style;
+                return (
+                  <button
+                    key={style}
+                    type="button"
+                    onClick={() => update("travelStyle", style)}
+                    className={cn(
+                      "rounded-xl border px-2 py-3 text-xs capitalize transition-all",
+                      selected
+                        ? "border-white/70 bg-white/18 text-white shadow-soft"
+                        : "border-white/12 bg-white/[0.06] text-white/62 hover:bg-white/12",
+                    )}
+                    aria-pressed={selected}
+                  >
+                    {style === "relaxed" ? "☼" : style === "balanced" ? "◉" : "♢"}
+                    <span className="mt-1 block">{style}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <Button
+            size="lg"
+            className="mt-6 w-full rounded-xl bg-gradient-to-r from-[#0d789b] via-[#167f9c] to-[#d87851] text-white shadow-lift hover:-translate-y-0.5"
+            onClick={() => navigate({ to: "/plan" })}
+          >
+            Discover possibilities
+            <ArrowRight aria-hidden />
+          </Button>
+          <p className="mt-3 flex items-center justify-center gap-2 text-[10px] text-white/58">
+            <Check className="h-3 w-3" aria-hidden /> Free to plan · No credit card
+            <Compass className="h-3 w-3" aria-hidden />
+          </p>
+        </motion.div>
       </div>
     </section>
-
   );
 }

@@ -1,11 +1,10 @@
-import { API_CONFIG, ESTIMATE_QUALITY, LIVE_QUALITY, MOCK_QUALITY } from "@/api/config";
-import { apiGet } from "@/api/http";
+import { ESTIMATE_QUALITY, MOCK_QUALITY } from "@/api/config";
 import { CITY_BY_ID } from "@/data/cities";
 import type { HotelSuggestion, LuxuryLevel } from "@/lib/types";
 
 /**
- * Hotel service. Mock inventory today, drop-in shape for Booking.com /
- * Skyscanner style partners tomorrow (see API_CONFIG.hotels).
+ * Hotel service. Uses Astera's server-only Hotelbeds route when
+ * configured and always keeps the curated city inventory as a safe fallback.
  */
 
 const LUXURY_FACTOR: Record<LuxuryLevel, number> = {
@@ -27,40 +26,71 @@ export interface HotelSearchParams {
   nights: number;
   travellers: number;
   luxuryLevel: LuxuryLevel;
+  checkInDate: string;
+  checkOutDate: string;
 }
 
 export async function searchHotel(params: HotelSearchParams): Promise<HotelSuggestion> {
   const city = CITY_BY_ID.get(params.cityId);
-  const fallback: HotelSuggestion = {
+  const nightlyFrom = Math.round(
+    (city?.hotels[0]?.nightlyFrom ?? 95) * LUXURY_FACTOR[params.luxuryLevel],
+  );
+  const rooms = Math.max(1, Math.ceil(params.travellers / 2));
+  const fallback = (fallbackReason: string): HotelSuggestion => ({
     name: city?.hotels[0]?.name ?? "Central stay",
     area: city?.hotels[0]?.area ?? "City centre",
     style: `${LUXURY_LABEL[params.luxuryLevel]} · ${city?.hotels[0]?.style ?? "Well rated"}`,
-    nightlyFrom: Math.round((city?.hotels[0]?.nightlyFrom ?? 95) * LUXURY_FACTOR[params.luxuryLevel]),
+    nightlyFrom,
+    totalStayPrice: nightlyFrom * Math.max(1, params.nights) * rooms,
+    roomType: LUXURY_LABEL[params.luxuryLevel],
+    boardType: "Board not specified",
     rating: city?.hotels[0]?.rating ?? 4.4,
+    fallbackReason,
     quality: MOCK_QUALITY("Astera sample inventory"),
-  };
+  });
 
-  if (!API_CONFIG.hotels.enabled || !API_CONFIG.hotels.baseUrl) return fallback;
+  if (!city) return fallback("This destination is not available in the hotel search catalogue.");
+  if (typeof window === "undefined") {
+    return fallback("Live hotel availability is checked when the results load in your browser.");
+  }
 
   try {
-    const data = await apiGet<{
-      hotels: { name: string; district: string; price: number; rating: number }[];
-    }>(`${API_CONFIG.hotels.baseUrl}/search`, {
-      query: { city: params.cityId, nights: params.nights, guests: params.travellers },
-      headers: { Authorization: `Bearer ${API_CONFIG.hotels.apiKey}` },
+    const response = await fetch("/api/hotels/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        latitude: city.lat,
+        longitude: city.lon,
+        checkInDate: params.checkInDate,
+        checkOutDate: params.checkOutDate,
+        travellers: params.travellers,
+        luxuryLevel: params.luxuryLevel,
+      }),
     });
-    const first = data.hotels?.[0];
-    if (!first) return fallback;
-    return {
-      name: first.name,
-      area: first.district,
-      style: LUXURY_LABEL[params.luxuryLevel],
-      nightlyFrom: Math.round(first.price),
-      rating: first.rating,
-      quality: LIVE_QUALITY(API_CONFIG.hotels.provider),
+    const data = (await response.json()) as {
+      hotel?: HotelSuggestion | null;
+      configured?: boolean;
+      error?: string;
     };
+    if (!response.ok) {
+      return fallback(data.error ?? `Hotel search failed (${response.status}).`);
+    }
+    if (!data.configured) {
+      return fallback(
+        "Hotelbeds is not configured, so sample accommodation pricing is being used.",
+      );
+    }
+    return (
+      data.hotel ??
+      fallback(
+        data.error ??
+          "Hotelbeds returned no availability for these dates, so sample accommodation pricing is being used.",
+      )
+    );
   } catch {
-    return fallback;
+    return fallback(
+      "The Hotelbeds search could not be reached, so sample accommodation pricing is being used.",
+    );
   }
 }
 
