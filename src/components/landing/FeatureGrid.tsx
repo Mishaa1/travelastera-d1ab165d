@@ -69,7 +69,7 @@ export function FeatureGrid() {
       <div className="mt-16 grid gap-px overflow-hidden rounded-4xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
         {FEATURES.map((feature, index) => (
           <Reveal key={feature.title} delay={(index % 4) * 0.06}>
-            <div className="group h-full bg-card p-7 transition-colors duration-500 hover:bg-secondary/40">
+            <div className="hover-navy group h-full bg-card p-7">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-teal/8 text-teal transition-transform duration-500 group-hover:-translate-y-0.5">
                 <feature.Icon className="h-5 w-5" strokeWidth={1.6} aria-hidden />
               </span>

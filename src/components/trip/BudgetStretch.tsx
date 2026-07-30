@@ -73,7 +73,7 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
           <button
             type="button"
             onClick={() => setApplied([])}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors duration-200 hover:border-aegean hover:bg-aegean hover:text-primary-foreground"
           >
             <RotateCcw className="h-3 w-3" aria-hidden />
             Reset
@@ -159,7 +159,7 @@ function StretchRow({
           "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
           active
             ? "border-teal/50 bg-teal/8"
-            : "border-border bg-card hover:border-teal/30 hover:bg-secondary/50",
+            : "border-border bg-card transition-colors duration-250 hover:border-aegean hover:bg-aegean hover:text-primary-foreground",
         )}
       >
         <span

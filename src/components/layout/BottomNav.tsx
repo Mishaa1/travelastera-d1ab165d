@@ -23,7 +23,7 @@ export function BottomNav() {
             to={to}
             activeOptions={{ exact }}
             activeProps={{ className: "bg-secondary text-foreground" }}
-            className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-muted-foreground transition-colors"
+            className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium text-muted-foreground transition-colors duration-250 hover:bg-aegean hover:text-primary-foreground"
           >
             <Icon className="h-5 w-5" aria-hidden />
             {label}

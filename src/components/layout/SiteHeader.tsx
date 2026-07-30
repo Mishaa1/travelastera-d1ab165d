@@ -37,7 +37,7 @@ export function SiteHeader() {
             <Link
               key={item.to}
               to={item.to}
-              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-250 hover:bg-aegean hover:text-primary-foreground"
               activeProps={{ className: "text-foreground bg-secondary" }}
               activeOptions={{ exact: item.to === "/" }}
             >
@@ -74,7 +74,7 @@ export function SiteHeader() {
               key={item.to}
               to={item.to}
               onClick={() => setOpen(false)}
-              className="rounded-2xl px-4 py-3 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
+              className="rounded-2xl px-4 py-3 text-base font-medium text-muted-foreground transition-colors duration-250 hover:bg-aegean hover:text-primary-foreground"
               activeProps={{ className: "text-foreground bg-secondary" }}
               activeOptions={{ exact: item.to === "/" }}
             >
