@@ -25,10 +25,11 @@ const TESTIMONIALS = [
 
 export function Testimonials() {
   return (
-    <section className="bg-sand/60 py-24 md:py-36">
+    <section className="surface-aegean py-24 md:py-36">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <Reveal>
-          <h2 className="max-w-2xl text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.03] font-semibold">
+          <div className="meander mb-8 max-w-[220px] text-primary-foreground" aria-hidden />
+          <h2 className="max-w-2xl font-serif-display text-[clamp(2.2rem,4.8vw,3.6rem)] leading-[1.05] font-light text-primary-foreground">
             Trips people wouldn't have found alone.
           </h2>
         </Reveal>
@@ -36,26 +37,27 @@ export function Testimonials() {
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map((item, index) => (
             <Reveal key={item.name} delay={index * 0.1}>
-              <figure className="card-lift flex h-full flex-col rounded-4xl border border-border bg-card p-7">
+              <figure className="hover-lift flex h-full flex-col rounded-[24px] border border-primary-foreground/12 bg-primary-foreground/6 p-7 backdrop-blur-sm">
                 <div className="flex gap-1" aria-label="Five out of five">
                   {Array.from({ length: 5 }).map((_, star) => (
-                    <Star key={star} className="h-4 w-4 fill-sunset text-sunset" aria-hidden />
+                    <Star key={star} className="h-4 w-4 fill-gold text-gold" aria-hidden />
                   ))}
                 </div>
-                <blockquote className="mt-5 flex-1 text-[15px] leading-relaxed">
+                <blockquote className="mt-5 flex-1 text-[15px] leading-relaxed text-primary-foreground/85">
                   “{item.quote}”
                 </blockquote>
-                <figcaption className="mt-6 border-t border-border pt-4">
-                  <span className="block text-sm font-semibold">{item.name}</span>
-                  <span className="block text-xs text-muted-foreground">{item.detail}</span>
+                <figcaption className="mt-6 border-t border-primary-foreground/15 pt-4">
+                  <span className="block text-sm font-semibold text-primary-foreground">{item.name}</span>
+                  <span className="block text-xs text-primary-foreground/60">{item.detail}</span>
                 </figcaption>
               </figure>
             </Reveal>
           ))}
         </div>
-        <p className="mt-8 text-xs text-muted-foreground">
+        <p className="mt-8 text-xs text-primary-foreground/55">
           Illustrative testimonials from a prototype product.
         </p>
+
       </div>
     </section>
   );

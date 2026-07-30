@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, BedDouble, CloudSun, Compass, PlaneTakeoff, Sparkles } from "lucide-react";
 import { useRef } from "react";
 
 import heroImage from "@/assets/hero-satellite.png.asset.json";
@@ -16,6 +16,16 @@ import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency, nightsBetween } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { isDiscoveryTrip } from "@/services/tripOptimizer";
+
+const TRUST_ITEMS = [
+  { Icon: Sparkles, label: "AI-powered planning" },
+  { Icon: PlaneTakeoff, label: "Flights" },
+  { Icon: BedDouble, label: "Hotels" },
+  { Icon: CloudSun, label: "Weather" },
+  { Icon: Compass, label: "Experiences" },
+] as const;
+
+
 
 export function Hero() {
   const navigate = useNavigate();
@@ -46,12 +56,19 @@ export function Hero() {
         />
         {/* Left-side ink wash for typographic contrast, right stays open. */}
         <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/70 via-[oklch(0.14_0.04_250)]/15 to-transparent" />
+        {/* Soft breathing city glow over the densest cluster of lights. */}
+        <div className="city-glow pointer-events-none absolute top-[22%] left-[46%] h-[46vh] w-[46vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.14_80/0.35)_0%,transparent_65%)] blur-2xl" />
+        <div
+          className="city-glow pointer-events-none absolute top-[46%] left-[70%] h-[30vh] w-[30vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.85_0.12_200/0.28)_0%,transparent_65%)] blur-2xl"
+          style={{ animationDelay: "2.5s" }}
+        />
         {/* Natural fade into the warm parchment page background. */}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </motion.div>
 
       {/* Animated travel paths between glowing city nodes */}
       <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 z-[1] h-[70%] w-full opacity-40" />
+
 
 
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
@@ -79,12 +96,13 @@ export function Hero() {
           <motion.h1
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-6 font-display text-[clamp(2.75rem,6.4vw,5rem)] leading-[0.98] font-medium tracking-[-0.03em] text-primary-foreground"
+            transition={{ duration: 1, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-7 font-serif-display text-[clamp(3rem,7.2vw,5.75rem)] leading-[0.95] font-light tracking-[-0.02em] text-primary-foreground"
           >
             See how far your{" "}
-            <span className="italic text-primary-foreground/90">budget</span> can take you.
+            <span className="italic text-[oklch(0.88_0.11_84)]">budget</span> can take you.
           </motion.h1>
+
 
           <motion.p
             initial={{ opacity: 0, y: 22 }}
@@ -95,6 +113,14 @@ export function Hero() {
             Tell us your budget, dates and travel style. We'll build the
             journeys worth taking.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ duration: 1.2, delay: 0.5 }}
+            className="meander mt-9 max-w-sm text-primary-foreground"
+            aria-hidden
+          />
         </div>
 
         {/* Conversational search panel ---------------------------------------- */}
@@ -104,11 +130,12 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
           className="relative self-end"
         >
-          <div className="surface-editorial rounded-[2rem] p-6 shadow-float backdrop-blur-xl sm:p-8">
-            <p className="font-display text-xl leading-snug tracking-[-0.01em] text-foreground">
+          <div className="glass-panel rounded-[24px] p-6 transition-shadow duration-500 sm:p-8">
+            <p className="font-serif-display text-2xl leading-snug text-foreground">
               I'm travelling from{" "}
               <span className="text-muted-foreground/60">…</span>
             </p>
+
 
             <div className="mt-5 space-y-5">
               <div>
@@ -264,6 +291,25 @@ export function Hero() {
           </div>
         </motion.div>
       </div>
+
+      {/* Trust row ----------------------------------------------------------- */}
+      <div className="relative z-10 border-t border-primary-foreground/10 bg-[oklch(0.14_0.04_250)]/45 backdrop-blur-sm">
+        <ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-5 py-6 md:px-8">
+          {TRUST_ITEMS.map((item, index) => (
+            <motion.li
+              key={item.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 + index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-2 text-[12px] font-medium tracking-[0.12em] text-primary-foreground/70 uppercase"
+            >
+              <item.Icon className="h-3.5 w-3.5 text-[oklch(0.85_0.11_84)]" strokeWidth={1.6} aria-hidden />
+              {item.label}
+            </motion.li>
+          ))}
+        </ul>
+      </div>
     </section>
+
   );
 }

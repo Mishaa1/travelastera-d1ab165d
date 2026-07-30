@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import {
   ArrowRight,
   Bookmark,
+  Check,
   BookmarkCheck,
   ChevronDown,
   GitCompare,
@@ -57,14 +58,23 @@ export function TripCard({
 
 
 
+  /** Editorial badge derived from the route's own numbers — purely presentational. */
+  const badge = useMemo(() => {
+    const ratio = route.cost > 0 ? route.budgetLeft / route.cost : 0;
+    if (ratio > 0.18) return { label: "Best Value", tone: "emerald" as const };
+    if (route.scores.nature >= 80) return { label: "Hidden Gem", tone: "gold" as const };
+    if (route.scores.efficiency >= 82) return { label: "Effortless", tone: "teal" as const };
+    return { label: "Balanced", tone: "gold" as const };
+  }, [route.budgetLeft, route.cost, route.scores.efficiency, route.scores.nature]);
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-      className="card-lift group overflow-hidden rounded-4xl border border-border bg-card shadow-soft"
+      className="card-lift group overflow-hidden rounded-[24px] border border-border bg-card shadow-soft"
     >
-      <div className="relative h-52 overflow-hidden sm:h-60">
+      <div className="relative h-64 overflow-hidden sm:h-80">
         <img
           src={route.image}
           alt={`${route.stops.map((s) => s.name).join(", ")}`}
@@ -79,7 +89,19 @@ export function TripCard({
         </div>
 
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-          <DataBadge quality={route.quality} className="surface-glass" />
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.1em] uppercase backdrop-blur-sm",
+                badge.tone === "emerald" && "bg-emerald/85 text-emerald-foreground",
+                badge.tone === "gold" && "bg-gold/90 text-ink",
+                badge.tone === "teal" && "bg-teal/85 text-teal-foreground",
+              )}
+            >
+              {badge.label}
+            </span>
+            <DataBadge quality={route.quality} className="surface-glass" />
+          </div>
           <span className="rounded-full bg-ink/45 px-3 py-1 text-[11px] font-semibold text-primary-foreground backdrop-blur-sm">
             {route.countries.join(" · ")}
           </span>
@@ -90,13 +112,14 @@ export function TripCard({
             <p className="text-[11px] font-semibold tracking-widest text-primary-foreground/75 uppercase">
               {route.tagline}
             </p>
-            <h3 className="mt-1 truncate font-display text-2xl font-semibold text-primary-foreground">
+            <h3 className="mt-1 truncate font-serif-display text-3xl font-light text-primary-foreground">
               {route.title}
             </h3>
           </div>
           <ScoreRing value={route.scores.overall} size={64} className="shrink-0" />
         </div>
       </div>
+
 
       <div className="space-y-5 p-5 sm:p-6">
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium">
@@ -139,11 +162,19 @@ export function TripCard({
         </div>
 
         {route.reasoning.length > 0 && (
-          <p className="rounded-2xl bg-primary/6 p-4 text-sm leading-relaxed">
-            <span className="font-semibold">Why this route: </span>
-            {route.reasoning[0]}
-          </p>
+          <div className="rounded-[20px] border border-border bg-secondary/50 p-5">
+            <p className="font-serif-display text-lg leading-snug">Why ASTERA picked this</p>
+            <ul className="mt-3 space-y-2">
+              {route.reasoning.slice(0, 4).map((reason) => (
+                <li key={reason} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald" strokeWidth={2.2} aria-hidden />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
 
         {route.scoreFactors?.length > 0 && (
           <details className="group/score rounded-3xl border border-border">

@@ -30,11 +30,20 @@ function LandingPage() {
   return (
     <PageShell>
       <Hero />
-      <HowItWorks />
-      <ComparisonSection />
-      <FeatureGrid />
+      <div className="bg-card">
+        <HowItWorks />
+      </div>
+      <div className="surface-marble">
+        <ComparisonSection />
+      </div>
+      <div className="bg-card">
+        <FeatureGrid />
+      </div>
       <Testimonials />
-      <FaqSection />
+      <div className="surface-marble">
+        <FaqSection />
+      </div>
+
 
       <section className="px-5 pb-24 md:px-8 md:pb-36">
         <Reveal className="mx-auto max-w-6xl overflow-hidden rounded-4xl gradient-dawn p-10 text-center shadow-lift md:p-20">
