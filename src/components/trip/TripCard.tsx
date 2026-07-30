@@ -161,11 +161,19 @@ export function TripCard({
         </div>
 
         {route.reasoning.length > 0 && (
-          <p className="rounded-2xl bg-primary/6 p-4 text-sm leading-relaxed">
-            <span className="font-semibold">Why this route: </span>
-            {route.reasoning[0]}
-          </p>
+          <div className="rounded-[20px] border border-border bg-secondary/50 p-5">
+            <p className="font-serif-display text-lg leading-snug">Why ASTERA picked this</p>
+            <ul className="mt-3 space-y-2">
+              {route.reasoning.slice(0, 4).map((reason) => (
+                <li key={reason} className="flex items-start gap-2.5 text-sm leading-relaxed">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald" strokeWidth={2.2} aria-hidden />
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
 
         {route.scoreFactors?.length > 0 && (
           <details className="group/score rounded-3xl border border-border">
