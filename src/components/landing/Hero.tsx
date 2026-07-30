@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { ArrowRight, BedDouble, CloudSun, Compass, PlaneTakeoff, Sparkles } from "lucide-react";
 import { useRef } from "react";
 
-import heroImage from "@/assets/hero-satellite.png.asset.json";
+import heroImage from "@/assets/hero-satellite.png";
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
 import { TravelPaths } from "@/components/common/TravelPaths";
 import { Wordmark } from "@/components/layout/Wordmark";
@@ -47,7 +47,7 @@ export function Hero() {
       {/* Satellite backdrop -------------------------------------------------- */}
       <motion.div style={{ y: imageY }} className="absolute inset-0 z-0">
         <img
-          src={heroImage.url}
+          src={heroImage}
           alt="Satellite view of Europe at night with glowing city lights and travel routes"
           width={1672}
           height={941}
