@@ -281,6 +281,25 @@ export function Hero() {
           </div>
         </motion.div>
       </div>
+
+      {/* Trust row ----------------------------------------------------------- */}
+      <div className="relative z-10 border-t border-primary-foreground/10 bg-[oklch(0.14_0.04_250)]/45 backdrop-blur-sm">
+        <ul className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-4 px-5 py-6 md:px-8">
+          {TRUST_ITEMS.map((item, index) => (
+            <motion.li
+              key={item.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 + index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-2 text-[12px] font-medium tracking-[0.12em] text-primary-foreground/70 uppercase"
+            >
+              <item.Icon className="h-3.5 w-3.5 text-[oklch(0.85_0.11_84)]" strokeWidth={1.6} aria-hidden />
+              {item.label}
+            </motion.li>
+          ))}
+        </ul>
+      </div>
     </section>
+
   );
 }
