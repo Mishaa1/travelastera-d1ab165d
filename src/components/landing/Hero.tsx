@@ -17,6 +17,16 @@ import { formatCurrency, nightsBetween } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { isDiscoveryTrip } from "@/services/tripOptimizer";
 
+const TRUST_ITEMS = [
+  { Icon: Sparkles, label: "AI-powered planning" },
+  { Icon: PlaneTakeoff, label: "Flights" },
+  { Icon: BedDouble, label: "Hotels" },
+  { Icon: CloudSun, label: "Weather" },
+  { Icon: Compass, label: "Experiences" },
+] as const;
+
+
+
 export function Hero() {
   const navigate = useNavigate();
   const { preferences, update } = useTripDraft();
