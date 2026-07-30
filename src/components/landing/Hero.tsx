@@ -103,6 +103,14 @@ export function Hero() {
             Tell us your budget, dates and travel style. We'll build the
             journeys worth taking.
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ duration: 1.2, delay: 0.5 }}
+            className="meander mt-9 max-w-sm text-primary-foreground"
+            aria-hidden
+          />
         </div>
 
         {/* Conversational search panel ---------------------------------------- */}
@@ -112,11 +120,12 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
           className="relative self-end"
         >
-          <div className="surface-editorial rounded-[2rem] p-6 shadow-float backdrop-blur-xl sm:p-8">
-            <p className="font-display text-xl leading-snug tracking-[-0.01em] text-foreground">
+          <div className="glass-panel rounded-[24px] p-6 transition-shadow duration-500 sm:p-8">
+            <p className="font-serif-display text-2xl leading-snug text-foreground">
               I'm travelling from{" "}
               <span className="text-muted-foreground/60">…</span>
             </p>
+
 
             <div className="mt-5 space-y-5">
               <div>
