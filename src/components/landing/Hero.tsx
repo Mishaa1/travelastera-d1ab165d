@@ -46,12 +46,19 @@ export function Hero() {
         />
         {/* Left-side ink wash for typographic contrast, right stays open. */}
         <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.14_0.04_250)]/70 via-[oklch(0.14_0.04_250)]/15 to-transparent" />
+        {/* Soft breathing city glow over the densest cluster of lights. */}
+        <div className="city-glow pointer-events-none absolute top-[22%] left-[46%] h-[46vh] w-[46vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.14_80/0.35)_0%,transparent_65%)] blur-2xl" />
+        <div
+          className="city-glow pointer-events-none absolute top-[46%] left-[70%] h-[30vh] w-[30vh] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.85_0.12_200/0.28)_0%,transparent_65%)] blur-2xl"
+          style={{ animationDelay: "2.5s" }}
+        />
         {/* Natural fade into the warm parchment page background. */}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
       </motion.div>
 
       {/* Animated travel paths between glowing city nodes */}
       <TravelPaths className="pointer-events-none absolute inset-x-0 top-16 z-[1] h-[70%] w-full opacity-40" />
+
 
 
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pt-36 pb-24 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:gap-16 md:px-8 md:pt-52 md:pb-36">
