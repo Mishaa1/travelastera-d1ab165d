@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "motion/react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, BedDouble, CloudSun, Compass, PlaneTakeoff, Sparkles } from "lucide-react";
 import { useRef } from "react";
 
 import heroImage from "@/assets/hero-satellite.png.asset.json";
