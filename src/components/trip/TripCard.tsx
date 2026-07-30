@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import {
   ArrowRight,
   Bookmark,
+  Check,
   BookmarkCheck,
   ChevronDown,
   GitCompare,
