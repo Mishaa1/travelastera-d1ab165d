@@ -229,7 +229,9 @@ export function LocationAutocomplete({
                   onClick={() => commit(place)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors",
-                    index === active ? "bg-secondary" : "hover:bg-secondary/60",
+                    index === active
+                      ? "bg-aegean text-primary-foreground"
+                      : "transition-colors duration-200 hover:bg-aegean hover:text-primary-foreground",
                   )}
                 >
                   <span className="text-lg leading-none" aria-hidden>
@@ -266,7 +268,7 @@ export function LocationAutocomplete({
                     key={place.id}
                     type="button"
                     onClick={() => commit(place)}
-                    className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium transition-colors hover:bg-secondary/70"
+                    className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium transition-colors duration-200 hover:bg-aegean hover:text-primary-foreground"
                   >
                     {place.name}
                   </button>

@@ -38,7 +38,7 @@ export function HowItWorks() {
             as="li"
             key={step.title}
             delay={index * 0.08}
-            className="relative bg-card p-8 transition-colors duration-500 hover:bg-secondary/50 md:p-10"
+            className="hover-navy group relative bg-card p-8 md:p-10"
           >
             <div className="flex items-start justify-between">
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/8 text-primary">
