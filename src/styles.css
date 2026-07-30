@@ -305,3 +305,98 @@
   /* the trailing letter-space would otherwise offset optical centring */
   margin-right: -0.19em;
 }
+
+/* ── Greek-marble editorial layer ─────────────────────────────────────────
+   Aegean navy, marble cream, weathered gold. Ornament borrowed from the
+   meander (Greek key) fret; surfaces reference veined Pentelic marble. */
+
+@theme inline {
+  --font-serif-display: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --color-gold: var(--gold);
+  --color-marble: var(--marble);
+  --color-aegean: var(--aegean);
+}
+
+:root {
+  --gold: oklch(0.76 0.11 84);
+  --marble: oklch(0.972 0.011 88);
+  --aegean: oklch(0.24 0.05 245);
+}
+
+.dark {
+  --marble: oklch(0.24 0.02 88);
+  --aegean: oklch(0.18 0.03 245);
+}
+
+@utility font-serif-display {
+  font-family: var(--font-serif-display);
+}
+
+/* Softly veined marble panel — used for alternating page bands. */
+@utility surface-marble {
+  background-color: var(--color-marble);
+  background-image:
+    radial-gradient(120% 90% at 12% 0%, oklch(1 0 0 / 0.9) 0%, transparent 55%),
+    radial-gradient(90% 70% at 90% 15%, color-mix(in oklab, var(--color-gold) 14%, transparent) 0%, transparent 60%),
+    linear-gradient(115deg, transparent 46%, oklch(0.86 0.01 250 / 0.25) 47%, transparent 48%),
+    linear-gradient(160deg, transparent 68%, oklch(0.86 0.01 250 / 0.18) 69%, transparent 70%);
+}
+
+@utility surface-aegean {
+  background-color: var(--color-aegean);
+  color: var(--color-primary-foreground);
+  background-image:
+    radial-gradient(100% 80% at 15% 0%, color-mix(in oklab, var(--color-teal) 22%, transparent) 0%, transparent 60%),
+    radial-gradient(80% 70% at 90% 100%, color-mix(in oklab, var(--color-gold) 16%, transparent) 0%, transparent 60%);
+}
+
+/* Greek key fret, drawn purely in gradients. */
+@utility meander {
+  height: 12px;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-gold) 70%, transparent) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0 5px,
+      color-mix(in oklab, var(--color-gold) 45%, transparent) 5px 6px,
+      transparent 6px 12px
+    );
+  opacity: 0.55;
+}
+
+@utility glass-panel {
+  background: color-mix(in oklab, var(--color-card) 78%, transparent);
+  backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid oklch(1 0 0 / 0.5);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.7) inset,
+    var(--shadow-float);
+}
+
+@utility hover-lift {
+  transition:
+    transform 0.45s var(--ease-silk),
+    box-shadow 0.45s var(--ease-silk);
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+@keyframes astera-glow {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@utility city-glow {
+  animation: astera-glow 7s ease-in-out infinite;
+}
