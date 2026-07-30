@@ -26,7 +26,7 @@ const SAFARA = [
 
 export function ComparisonSection() {
   return (
-    <section className="bg-sand/60 py-24 md:py-36">
+    <section className="py-24 md:py-36">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
         <Reveal>
           <p className="text-xs font-semibold tracking-widest text-sunset uppercase">
