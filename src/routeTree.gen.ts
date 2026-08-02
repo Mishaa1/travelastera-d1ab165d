@@ -9,28 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as PlanRouteImport } from './routes/plan'
-import { Route as ResultsRouteImport } from './routes/results'
-import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as PlanRouteImport } from './routes/plan'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as TripTripIdRouteImport } from './routes/trip.$tripId'
-import { Route as ApiFlightsSearchRouteImport } from './routes/api/flights/search'
 import { Route as ApiHotelsSearchRouteImport } from './routes/api/hotels/search'
+import { Route as ApiFlightsSearchRouteImport } from './routes/api/flights/search'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanRoute = PlanRouteImport.update({
-  id: '/plan',
-  path: '/plan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResultsRoute = ResultsRouteImport.update({
-  id: '/results',
-  path: '/results',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedRoute = SavedRouteImport.update({
@@ -38,9 +28,19 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanRoute = PlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TripTripIdRoute = TripTripIdRouteImport.update({
@@ -48,14 +48,14 @@ const TripTripIdRoute = TripTripIdRouteImport.update({
   path: '/trip/$tripId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiFlightsSearchRoute = ApiFlightsSearchRouteImport.update({
-  id: '/api/flights/search',
-  path: '/api/flights/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiHotelsSearchRoute = ApiHotelsSearchRouteImport.update({
   id: '/api/hotels/search',
   path: '/api/hotels/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFlightsSearchRoute = ApiFlightsSearchRouteImport.update({
+  id: '/api/flights/search',
+  path: '/api/flights/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -136,25 +136,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/plan': {
-      id: '/plan'
-      path: '/plan'
-      fullPath: '/plan'
-      preLoaderRoute: typeof PlanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/results': {
-      id: '/results'
-      path: '/results'
-      fullPath: '/results'
-      preLoaderRoute: typeof ResultsRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saved': {
@@ -164,11 +150,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan': {
+      id: '/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trip/$tripId': {
@@ -178,18 +178,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TripTripIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/flights/search': {
-      id: '/api/flights/search'
-      path: '/api/flights/search'
-      fullPath: '/api/flights/search'
-      preLoaderRoute: typeof ApiFlightsSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/hotels/search': {
       id: '/api/hotels/search'
       path: '/api/hotels/search'
       fullPath: '/api/hotels/search'
       preLoaderRoute: typeof ApiHotelsSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/flights/search': {
+      id: '/api/flights/search'
+      path: '/api/flights/search'
+      fullPath: '/api/flights/search'
+      preLoaderRoute: typeof ApiFlightsSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
