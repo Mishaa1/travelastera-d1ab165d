@@ -20,16 +20,18 @@ export interface PlaceResult {
   quality: DataQuality;
 }
 
+interface PlaceItem {
+  id?: string;
+  displayName?: { text?: string };
+  formattedAddress?: string;
+  location?: { latitude?: number; longitude?: number };
+  rating?: number;
+  photos?: { name?: string }[];
+  websiteUri?: string;
+}
+
 interface PlacesResponse {
-  places?: {
-    id?: string;
-    displayName?: { text?: string };
-    formattedAddress?: string;
-    location?: { latitude?: number; longitude?: number };
-    rating?: number;
-    photos?: { name?: string }[];
-    websiteUri?: string;
-  }[];
+  places?: PlaceItem[];
 }
 
 const BASE_URL = "https://places.googleapis.com/v1/places:searchText";
