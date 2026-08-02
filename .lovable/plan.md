@@ -3,6 +3,12 @@
 ## Goal
 Securely store the five provider credentials the user already has, document them in `.env.example`, and connect each one to the existing ASTERA architecture without changing the product's UX or information architecture.
 
+## Phase 0 — Fix pre-existing TypeScript errors
+Before adding new integrations, resolve the current build errors so the rest of the work is validated against a green build.
+
+- `src/components/landing/Hero.tsx` — reconcile `TravelStyle` enum/const mismatch around the travel-style selector.
+- `src/services/tripOptimizer.ts(440,7)` — add a null guard for the `start` variable.
+
 ## Phase 1 — Secure secret storage
 Use Lovable's secret tools to add the credentials as runtime environment variables. Each secret is read only inside server functions / server routes, never exposed to the browser.
 
