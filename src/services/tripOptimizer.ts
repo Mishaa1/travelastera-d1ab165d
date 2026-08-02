@@ -429,7 +429,7 @@ export function normalisePreferences(input: Partial<TripPreferences>): TripPrefe
 
   // Provider availability APIs cannot search past dates. Preserve the requested
   // trip length while moving an old draft into a bookable future window.
-  if (!start) start = addDaysIso(todayIso(), 30);
+  if (!start) start = addDaysIso(todayIso(), 30)!;
   if (!end || nightsBetweenSafe(start, end) === null) {
     end = addDaysIso(start, DEFAULT_TRIP_NIGHTS);
   }
