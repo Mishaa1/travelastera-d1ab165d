@@ -73,7 +73,7 @@ export async function searchPlaces(query: string, limit = 5): Promise<PlaceResul
   }
 }
 
-function normalise(place: PlacesResponse["places"][number]): PlaceResult {
+function normalise(place: PlaceItem): PlaceResult {
   return {
     id: place.id ?? "",
     name: place.displayName?.text ?? "",
