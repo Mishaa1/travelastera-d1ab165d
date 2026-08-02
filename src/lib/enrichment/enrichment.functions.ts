@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { generateWhyCopy, isOpenRouterConfigured } from "@/lib/enrichment/openrouter.server";
-import { lookupWikimedia } from "@/lib/enrichment/wikimedia.server";
+import { lookupWikimedia, isWikimediaConfigured } from "@/lib/enrichment/wikimedia.server";
 import { searchPlaces, isGooglePlacesConfigured } from "@/lib/enrichment/google-places.server";
 
 /**
