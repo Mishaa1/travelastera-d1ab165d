@@ -16,7 +16,11 @@ import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const STYLES = ["relaxed", "balanced", "adventure"] as const;
+const PACE: { id: string; label: string; hours: number; fewerHotels: boolean }[] = [
+  { id: "relaxed", label: "Relaxed", hours: 8, fewerHotels: true },
+  { id: "balanced", label: "Balanced", hours: 14, fewerHotels: false },
+  { id: "adventure", label: "Adventure", hours: 26, fewerHotels: false },
+];
 
 export function Hero() {
   const navigate = useNavigate();
