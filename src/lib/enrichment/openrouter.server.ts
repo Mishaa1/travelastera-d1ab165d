@@ -74,7 +74,10 @@ export async function generateWhyCopy(context: {
       choices?: { message?: { content?: string } }[];
     };
     const text = payload.choices?.[0]?.message?.content?.trim() ?? "";
-    return { text: text || `A strong fit for ${context.city} based on your interests.`, quality: LIVE_QUALITY("OpenRouter") };
+    return {
+      text: text || `A strong fit for ${context.city} based on your interests.`,
+      quality: LIVE_QUALITY("OpenRouter"),
+    };
   } finally {
     clearTimeout(timer);
   }

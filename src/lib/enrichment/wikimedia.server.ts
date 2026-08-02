@@ -45,7 +45,9 @@ export async function lookupWikimedia(query: string): Promise<WikimediaResult | 
       title,
       extract: summary?.extract,
       thumbnailUrl: images?.thumbnailUrl ?? summary?.thumbnail?.source,
-      pageUrl: summary?.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+      pageUrl:
+        summary?.content_urls?.desktop?.page ??
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
       quality: LIVE_QUALITY("Wikimedia"),
     };
   } catch (error) {
@@ -67,7 +69,7 @@ async function fetchSummary(title: string, signal: AbortSignal): Promise<Summary
   const response = await fetch(`${SUMMARY_BASE}/${encodeURIComponent(title)}`, {
     signal,
     headers: {
-      "Accept": "application/json",
+      Accept: "application/json",
       "User-Agent": userAgent(),
     },
   });
@@ -88,7 +90,10 @@ interface ImagesResponse {
   };
 }
 
-async function fetchThumbnail(title: string, signal: AbortSignal): Promise<{ thumbnailUrl?: string } | null> {
+async function fetchThumbnail(
+  title: string,
+  signal: AbortSignal,
+): Promise<{ thumbnailUrl?: string } | null> {
   const response = await fetch(
     `${IMAGES_BASE}?action=query&prop=pageimages&titles=${encodeURIComponent(title)}&pithumbsize=800&format=json&origin=*`,
     { signal, headers: { "User-Agent": userAgent() } },

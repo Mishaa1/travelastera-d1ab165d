@@ -55,7 +55,8 @@ export async function searchPlaces(query: string, limit = 5): Promise<PlaceResul
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": key,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.photos,places.websiteUri",
+        "X-Goog-FieldMask":
+          "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.photos,places.websiteUri",
       },
       body: JSON.stringify({ textQuery: query, pageSize: limit }),
     });
