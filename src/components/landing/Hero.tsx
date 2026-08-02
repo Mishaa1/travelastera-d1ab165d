@@ -16,7 +16,11 @@ import { useTripDraft } from "@/hooks/useTripDraft";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const STYLES = ["relaxed", "balanced", "adventure"] as const;
+const PACE: { id: string; label: string; hours: number; fewerHotels: boolean }[] = [
+  { id: "relaxed", label: "Relaxed", hours: 8, fewerHotels: true },
+  { id: "balanced", label: "Balanced", hours: 14, fewerHotels: false },
+  { id: "adventure", label: "Adventure", hours: 26, fewerHotels: false },
+];
 
 export function Hero() {
   const navigate = useNavigate();
@@ -157,13 +161,16 @@ export function Hero() {
           <fieldset className="mt-5">
             <legend className="text-xs text-white/65">Travel style</legend>
             <div className="mt-2 grid grid-cols-3 gap-2">
-              {STYLES.map((style) => {
-                const selected = preferences.travelStyle === style;
+              {PACE.map((pace) => {
+                const selected = preferences.maxTravelHours === pace.hours;
                 return (
                   <button
-                    key={style}
+                    key={pace.id}
                     type="button"
-                    onClick={() => update("travelStyle", style)}
+                    onClick={() => {
+                      update("maxTravelHours", pace.hours);
+                      update("fewerHotelChanges", pace.fewerHotels);
+                    }}
                     className={cn(
                       "rounded-xl border px-2 py-3 text-xs capitalize transition-all",
                       selected
@@ -172,8 +179,8 @@ export function Hero() {
                     )}
                     aria-pressed={selected}
                   >
-                    {style === "relaxed" ? "☼" : style === "balanced" ? "◉" : "♢"}
-                    <span className="mt-1 block">{style}</span>
+                    {pace.id === "relaxed" ? "☼" : pace.id === "balanced" ? "◉" : "♢"}
+                    <span className="mt-1 block">{pace.label}</span>
                   </button>
                 );
               })}
