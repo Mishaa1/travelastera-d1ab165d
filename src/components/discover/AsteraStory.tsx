@@ -46,10 +46,12 @@ export function AsteraStory({ experience, onOpenChange }: AsteraStoryProps) {
                   {attraction.name}
                 </DialogTitle>
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-primary-foreground/85">
-                  <span className="inline-flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
-                    {attraction.rating.toFixed(1)}
-                  </span>
+                  {attraction.rating > 0 && (
+                    <span className="inline-flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
+                      {attraction.rating.toFixed(1)}
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" aria-hidden />
                     {attraction.location}
@@ -172,15 +174,7 @@ function SectionLabel({ icon, children }: { icon: React.ReactNode; children: Rea
   );
 }
 
-function Fact({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border p-3">
       <p className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">

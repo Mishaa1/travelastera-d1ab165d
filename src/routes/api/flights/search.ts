@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { DuffelProviderError, duffelProvider } from "@/lib/flights/duffel.server";
 import { MAX_DISCOVERY_DESTINATIONS, type NormalisedFlightOffer } from "@/lib/flights/types";
+import { requireLiveData } from "@/lib/live-data";
 
 /**
  * POST /api/flights/search
@@ -64,8 +65,13 @@ export const Route = createFileRoute("/api/flights/search")({
 
         if (!duffelProvider.isConfigured()) {
           return Response.json(
-            { results: [], configured: false, error: "Flight provider is not configured" },
-            { status: 200 },
+            {
+              results: [],
+              configured: false,
+              requiredLiveData: requireLiveData(),
+              error: "Flight provider is not configured",
+            },
+            { status: requireLiveData() ? 503 : 200 },
           );
         }
 
@@ -108,7 +114,15 @@ export const Route = createFileRoute("/api/flights/search")({
 
         await Promise.all([worker(), worker()]);
 
-        return Response.json({ results, configured: true });
+        const empty = results.every((result) => result.offers.length === 0);
+        return Response.json(
+          {
+            results,
+            configured: true,
+            requiredLiveData: requireLiveData(),
+          },
+          { status: empty && requireLiveData() ? 503 : 200 },
+        );
       },
     },
   },

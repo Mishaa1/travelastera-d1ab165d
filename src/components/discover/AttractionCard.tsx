@@ -83,10 +83,12 @@ export function AttractionCard({
             {attraction.name}
           </h3>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-primary-foreground/85">
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
-              {attraction.rating.toFixed(1)}
-            </span>
+            {attraction.rating > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-current" aria-hidden />
+                {attraction.rating.toFixed(1)}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1">
               <Clock3 className="h-3.5 w-3.5" aria-hidden />
               {formatMinutes(attraction.visitMinutes)}
@@ -97,6 +99,15 @@ export function AttractionCard({
       </div>
 
       <div className={cn("flex flex-1 flex-col gap-3 p-4 sm:p-5", !compact && "gap-4")}>
+        {attraction.photoAttributions?.length ? (
+          <p className="text-[10px] text-muted-foreground">
+            Photo:{" "}
+            {attraction.photoAttributions
+              .map((credit) => credit.displayName)
+              .filter(Boolean)
+              .join(", ") || "Google Places contributor"}
+          </p>
+        ) : null}
         {hook && <p className="text-sm leading-relaxed text-foreground/90">{hook}</p>}
 
         <div className="rounded-2xl bg-secondary/70 p-3 text-sm">

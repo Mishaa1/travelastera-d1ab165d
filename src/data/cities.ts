@@ -32,7 +32,13 @@ export interface CityRecord {
   scores: Record<Interest, number>;
   dayTrips: string[];
   hotels: { name: string; area: string; style: string; nightlyFrom: number; rating: number }[];
-  highlights: { morning: string; afternoon: string; evening: string; restaurant: string; rainy: string }[];
+  highlights: {
+    morning: string;
+    afternoon: string;
+    evening: string;
+    restaurant: string;
+    rainy: string;
+  }[];
 }
 
 const s = (
@@ -71,7 +77,13 @@ export const CITIES: CityRecord[] = [
     scores: s(72, 94, 74, 92, 86, 78, 88, 66, 74),
     dayTrips: ["Sintra palaces", "Cascais coast", "Arrábida cliffs"],
     hotels: [
-      { name: "Casa Alfama", area: "Alfama", style: "Boutique townhouse", nightlyFrom: 118, rating: 4.7 },
+      {
+        name: "Casa Alfama",
+        area: "Alfama",
+        style: "Boutique townhouse",
+        nightlyFrom: 118,
+        rating: 4.7,
+      },
       { name: "Praça Rooftop", area: "Baixa", style: "Design hotel", nightlyFrom: 96, rating: 4.5 },
     ],
     highlights: [
@@ -104,8 +116,20 @@ export const CITIES: CityRecord[] = [
     scores: s(70, 92, 62, 90, 84, 70, 76, 62, 66),
     dayTrips: ["Douro Valley vineyards", "Aveiro canals", "Guimarães old town"],
     hotels: [
-      { name: "Ribeira Loft", area: "Ribeira", style: "River-view apartment", nightlyFrom: 92, rating: 4.6 },
-      { name: "Bolhão House", area: "Baixa", style: "Modern boutique", nightlyFrom: 84, rating: 4.4 },
+      {
+        name: "Ribeira Loft",
+        area: "Ribeira",
+        style: "River-view apartment",
+        nightlyFrom: 92,
+        rating: 4.6,
+      },
+      {
+        name: "Bolhão House",
+        area: "Baixa",
+        style: "Modern boutique",
+        nightlyFrom: 84,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -130,8 +154,20 @@ export const CITIES: CityRecord[] = [
     scores: s(60, 90, 70, 88, 94, 80, 84, 58, 72),
     dayTrips: ["Córdoba mezquita", "Ronda gorge", "Cádiz beaches"],
     hotels: [
-      { name: "Patio Santa Cruz", area: "Santa Cruz", style: "Andalusian patio house", nightlyFrom: 105, rating: 4.7 },
-      { name: "Triana Rooms", area: "Triana", style: "Quiet guesthouse", nightlyFrom: 74, rating: 4.3 },
+      {
+        name: "Patio Santa Cruz",
+        area: "Santa Cruz",
+        style: "Andalusian patio house",
+        nightlyFrom: 105,
+        rating: 4.7,
+      },
+      {
+        name: "Triana Rooms",
+        area: "Triana",
+        style: "Quiet guesthouse",
+        nightlyFrom: 74,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -156,8 +192,20 @@ export const CITIES: CityRecord[] = [
     scores: s(84, 86, 54, 90, 96, 76, 70, 78, 62),
     dayTrips: ["Sierra Nevada trails", "Alpujarra villages", "Nerja caves"],
     hotels: [
-      { name: "Mirador Albaicín", area: "Albaicín", style: "Hillside carmen", nightlyFrom: 88, rating: 4.8 },
-      { name: "Realejo Studio", area: "Realejo", style: "Simple and central", nightlyFrom: 62, rating: 4.2 },
+      {
+        name: "Mirador Albaicín",
+        area: "Albaicín",
+        style: "Hillside carmen",
+        nightlyFrom: 88,
+        rating: 4.8,
+      },
+      {
+        name: "Realejo Studio",
+        area: "Realejo",
+        style: "Simple and central",
+        nightlyFrom: 62,
+        rating: 4.2,
+      },
     ],
     highlights: [
       {
@@ -182,8 +230,20 @@ export const CITIES: CityRecord[] = [
     scores: s(72, 92, 90, 90, 84, 88, 92, 72, 88),
     dayTrips: ["Montserrat", "Sitges beaches", "Girona old town"],
     hotels: [
-      { name: "Eixample Atelier", area: "Eixample", style: "Modernista boutique", nightlyFrom: 145, rating: 4.6 },
-      { name: "Gràcia Rooms", area: "Gràcia", style: "Neighbourhood stay", nightlyFrom: 98, rating: 4.4 },
+      {
+        name: "Eixample Atelier",
+        area: "Eixample",
+        style: "Modernista boutique",
+        nightlyFrom: 145,
+        rating: 4.6,
+      },
+      {
+        name: "Gràcia Rooms",
+        area: "Gràcia",
+        style: "Neighbourhood stay",
+        nightlyFrom: 98,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -208,8 +268,20 @@ export const CITIES: CityRecord[] = [
     scores: s(86, 98, 60, 88, 66, 62, 74, 76, 84),
     dayTrips: ["Bilbao Guggenheim", "Getaria wineries", "Biarritz surf"],
     hotels: [
-      { name: "La Concha Rooms", area: "Centro", style: "Bay-view classic", nightlyFrom: 155, rating: 4.7 },
-      { name: "Gros Surf House", area: "Gros", style: "Relaxed surf stay", nightlyFrom: 96, rating: 4.4 },
+      {
+        name: "La Concha Rooms",
+        area: "Centro",
+        style: "Bay-view classic",
+        nightlyFrom: 155,
+        rating: 4.7,
+      },
+      {
+        name: "Gros Surf House",
+        area: "Gros",
+        style: "Relaxed surf stay",
+        nightlyFrom: 96,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -234,8 +306,20 @@ export const CITIES: CityRecord[] = [
     scores: s(64, 96, 74, 80, 88, 82, 74, 58, 80),
     dayTrips: ["Beaujolais vineyards", "Pérouges medieval village", "Annecy lake"],
     hotels: [
-      { name: "Presqu'île Maison", area: "Presqu'île", style: "Quiet boutique", nightlyFrom: 112, rating: 4.5 },
-      { name: "Croix-Rousse Loft", area: "Croix-Rousse", style: "Artist loft", nightlyFrom: 86, rating: 4.3 },
+      {
+        name: "Presqu'île Maison",
+        area: "Presqu'île",
+        style: "Quiet boutique",
+        nightlyFrom: 112,
+        rating: 4.5,
+      },
+      {
+        name: "Croix-Rousse Loft",
+        area: "Croix-Rousse",
+        style: "Artist loft",
+        nightlyFrom: 86,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -260,8 +344,20 @@ export const CITIES: CityRecord[] = [
     scores: s(96, 78, 56, 94, 70, 54, 52, 90, 74),
     dayTrips: ["Chamonix cable car", "Semnoz ridge", "Yvoire lakeside"],
     hotels: [
-      { name: "Lac Bleu Lodge", area: "Old Town", style: "Lakeside lodge", nightlyFrom: 128, rating: 4.6 },
-      { name: "Alpine Cabin", area: "Sevrier", style: "Cabin with a view", nightlyFrom: 94, rating: 4.5 },
+      {
+        name: "Lac Bleu Lodge",
+        area: "Old Town",
+        style: "Lakeside lodge",
+        nightlyFrom: 128,
+        rating: 4.6,
+      },
+      {
+        name: "Alpine Cabin",
+        area: "Sevrier",
+        style: "Cabin with a view",
+        nightlyFrom: 94,
+        rating: 4.5,
+      },
     ],
     highlights: [
       {
@@ -286,8 +382,20 @@ export const CITIES: CityRecord[] = [
     scores: s(99, 66, 48, 96, 54, 48, 46, 98, 82),
     dayTrips: ["Lauterbrunnen valley", "Grindelwald First", "Thun castle"],
     hotels: [
-      { name: "Jungfrau View", area: "Matten", style: "Mountain-view hotel", nightlyFrom: 178, rating: 4.6 },
-      { name: "Aare Hostel Suites", area: "Centre", style: "Smart budget", nightlyFrom: 92, rating: 4.2 },
+      {
+        name: "Jungfrau View",
+        area: "Matten",
+        style: "Mountain-view hotel",
+        nightlyFrom: 178,
+        rating: 4.6,
+      },
+      {
+        name: "Aare Hostel Suites",
+        area: "Centre",
+        style: "Smart budget",
+        nightlyFrom: 92,
+        rating: 4.2,
+      },
     ],
     highlights: [
       {
@@ -312,8 +420,20 @@ export const CITIES: CityRecord[] = [
     scores: s(90, 82, 58, 86, 78, 68, 70, 86, 60),
     dayTrips: ["Lake Bled", "Postojna caves", "Vintgar gorge"],
     hotels: [
-      { name: "Ljubljanica House", area: "Old Town", style: "Riverside boutique", nightlyFrom: 88, rating: 4.7 },
-      { name: "Metelkova Rooms", area: "Center", style: "Creative budget", nightlyFrom: 58, rating: 4.3 },
+      {
+        name: "Ljubljanica House",
+        area: "Old Town",
+        style: "Riverside boutique",
+        nightlyFrom: 88,
+        rating: 4.7,
+      },
+      {
+        name: "Metelkova Rooms",
+        area: "Center",
+        style: "Creative budget",
+        nightlyFrom: 58,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -338,8 +458,20 @@ export const CITIES: CityRecord[] = [
     scores: s(62, 82, 72, 94, 96, 88, 90, 58, 70),
     dayTrips: ["Kutná Hora", "Bohemian Switzerland", "Karlštejn castle"],
     hotels: [
-      { name: "Malá Strana Residence", area: "Malá Strana", style: "Historic residence", nightlyFrom: 104, rating: 4.6 },
-      { name: "Vinohrady Flat", area: "Vinohrady", style: "Local neighbourhood", nightlyFrom: 72, rating: 4.4 },
+      {
+        name: "Malá Strana Residence",
+        area: "Malá Strana",
+        style: "Historic residence",
+        nightlyFrom: 104,
+        rating: 4.6,
+      },
+      {
+        name: "Vinohrady Flat",
+        area: "Vinohrady",
+        style: "Local neighbourhood",
+        nightlyFrom: 72,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -364,8 +496,20 @@ export const CITIES: CityRecord[] = [
     scores: s(66, 84, 82, 84, 94, 98, 76, 54, 90),
     dayTrips: ["Wachau valley", "Bratislava", "Semmering railway"],
     hotels: [
-      { name: "Ringstrasse Classic", area: "Innere Stadt", style: "Grand classic", nightlyFrom: 165, rating: 4.7 },
-      { name: "Neubau Studio", area: "Neubau", style: "Design studio", nightlyFrom: 98, rating: 4.5 },
+      {
+        name: "Ringstrasse Classic",
+        area: "Innere Stadt",
+        style: "Grand classic",
+        nightlyFrom: 165,
+        rating: 4.7,
+      },
+      {
+        name: "Neubau Studio",
+        area: "Neubau",
+        style: "Design studio",
+        nightlyFrom: 98,
+        rating: 4.5,
+      },
     ],
     highlights: [
       {
@@ -390,8 +534,20 @@ export const CITIES: CityRecord[] = [
     scores: s(64, 86, 70, 90, 88, 82, 94, 60, 72),
     dayTrips: ["Szentendre", "Danube Bend", "Lake Balaton"],
     hotels: [
-      { name: "Danube Bank Suites", area: "District V", style: "River-view suites", nightlyFrom: 96, rating: 4.6 },
-      { name: "Jewish Quarter Rooms", area: "District VII", style: "Lively and central", nightlyFrom: 58, rating: 4.3 },
+      {
+        name: "Danube Bank Suites",
+        area: "District V",
+        style: "River-view suites",
+        nightlyFrom: 96,
+        rating: 4.6,
+      },
+      {
+        name: "Jewish Quarter Rooms",
+        area: "District VII",
+        style: "Lively and central",
+        nightlyFrom: 58,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -416,8 +572,20 @@ export const CITIES: CityRecord[] = [
     scores: s(66, 84, 62, 84, 94, 84, 82, 64, 58),
     dayTrips: ["Wieliczka salt mine", "Zakopane mountains", "Ojców park"],
     hotels: [
-      { name: "Kazimierz Courtyard", area: "Kazimierz", style: "Courtyard boutique", nightlyFrom: 74, rating: 4.6 },
-      { name: "Old Town Attic", area: "Stare Miasto", style: "Attic apartment", nightlyFrom: 54, rating: 4.4 },
+      {
+        name: "Kazimierz Courtyard",
+        area: "Kazimierz",
+        style: "Courtyard boutique",
+        nightlyFrom: 74,
+        rating: 4.6,
+      },
+      {
+        name: "Old Town Attic",
+        area: "Stare Miasto",
+        style: "Attic apartment",
+        nightlyFrom: 54,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -442,7 +610,13 @@ export const CITIES: CityRecord[] = [
     scores: s(58, 90, 66, 88, 99, 92, 86, 62, 66),
     dayTrips: ["Cape Sounion", "Aegina island", "Delphi"],
     hotels: [
-      { name: "Acropolis Terrace", area: "Koukaki", style: "Terrace with the view", nightlyFrom: 108, rating: 4.7 },
+      {
+        name: "Acropolis Terrace",
+        area: "Koukaki",
+        style: "Terrace with the view",
+        nightlyFrom: 108,
+        rating: 4.7,
+      },
       { name: "Psyri Loft", area: "Psyri", style: "Industrial loft", nightlyFrom: 72, rating: 4.3 },
     ],
     highlights: [
@@ -468,8 +642,20 @@ export const CITIES: CityRecord[] = [
     scores: s(94, 86, 44, 92, 74, 48, 62, 84, 72),
     dayTrips: ["Small Cyclades boat", "Mount Zas hike", "Apeiranthos village"],
     hotels: [
-      { name: "Plaka Beach Houses", area: "Plaka", style: "Beachfront villas", nightlyFrom: 132, rating: 4.8 },
-      { name: "Chora Studios", area: "Chora", style: "Whitewashed studios", nightlyFrom: 84, rating: 4.4 },
+      {
+        name: "Plaka Beach Houses",
+        area: "Plaka",
+        style: "Beachfront villas",
+        nightlyFrom: 132,
+        rating: 4.8,
+      },
+      {
+        name: "Chora Studios",
+        area: "Chora",
+        style: "Whitewashed studios",
+        nightlyFrom: 84,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -494,8 +680,20 @@ export const CITIES: CityRecord[] = [
     scores: s(88, 82, 58, 90, 90, 62, 78, 88, 72),
     dayTrips: ["Krka waterfalls", "Hvar island", "Brač Zlatni Rat"],
     hotels: [
-      { name: "Diocletian Rooms", area: "Old Town", style: "Inside the palace walls", nightlyFrom: 98, rating: 4.6 },
-      { name: "Bačvice Apartments", area: "Bačvice", style: "Beach-side apartment", nightlyFrom: 76, rating: 4.3 },
+      {
+        name: "Diocletian Rooms",
+        area: "Old Town",
+        style: "Inside the palace walls",
+        nightlyFrom: 98,
+        rating: 4.6,
+      },
+      {
+        name: "Bačvice Apartments",
+        area: "Bačvice",
+        style: "Beach-side apartment",
+        nightlyFrom: 76,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -520,8 +718,20 @@ export const CITIES: CityRecord[] = [
     scores: s(94, 76, 46, 94, 84, 52, 60, 92, 64),
     dayTrips: ["Perast and Our Lady of the Rocks", "Lovćen park", "Budva old town"],
     hotels: [
-      { name: "Bay Stone House", area: "Old Town", style: "Stone boutique", nightlyFrom: 82, rating: 4.7 },
-      { name: "Dobrota Rooms", area: "Dobrota", style: "Waterfront rooms", nightlyFrom: 54, rating: 4.4 },
+      {
+        name: "Bay Stone House",
+        area: "Old Town",
+        style: "Stone boutique",
+        nightlyFrom: 82,
+        rating: 4.7,
+      },
+      {
+        name: "Dobrota Rooms",
+        area: "Dobrota",
+        style: "Waterfront rooms",
+        nightlyFrom: 54,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -546,8 +756,20 @@ export const CITIES: CityRecord[] = [
     scores: s(98, 76, 54, 96, 78, 66, 56, 94, 78),
     dayTrips: ["Hardangerfjord", "Fløyen ridge walk", "Osterøy"],
     hotels: [
-      { name: "Bryggen Wharf Hotel", area: "Bryggen", style: "Historic wharf", nightlyFrom: 186, rating: 4.5 },
-      { name: "Nordnes Rooms", area: "Nordnes", style: "Quiet harbour rooms", nightlyFrom: 128, rating: 4.3 },
+      {
+        name: "Bryggen Wharf Hotel",
+        area: "Bryggen",
+        style: "Historic wharf",
+        nightlyFrom: 186,
+        rating: 4.5,
+      },
+      {
+        name: "Nordnes Rooms",
+        area: "Nordnes",
+        style: "Quiet harbour rooms",
+        nightlyFrom: 128,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -572,8 +794,20 @@ export const CITIES: CityRecord[] = [
     scores: s(70, 94, 86, 82, 76, 86, 80, 60, 92),
     dayTrips: ["Louisiana museum", "Malmö", "Dyrehaven forest"],
     hotels: [
-      { name: "Nyhavn Canal House", area: "Nyhavn", style: "Canal-side classic", nightlyFrom: 168, rating: 4.6 },
-      { name: "Vesterbro Design", area: "Vesterbro", style: "Nordic design", nightlyFrom: 122, rating: 4.5 },
+      {
+        name: "Nyhavn Canal House",
+        area: "Nyhavn",
+        style: "Canal-side classic",
+        nightlyFrom: 168,
+        rating: 4.6,
+      },
+      {
+        name: "Vesterbro Design",
+        area: "Vesterbro",
+        style: "Nordic design",
+        nightlyFrom: 122,
+        rating: 4.5,
+      },
     ],
     highlights: [
       {
@@ -598,8 +832,20 @@ export const CITIES: CityRecord[] = [
     scores: s(76, 80, 60, 86, 92, 78, 70, 64, 62),
     dayTrips: ["Lahemaa national park", "Helsinki ferry", "Paldiski cliffs"],
     hotels: [
-      { name: "Old Town Guild", area: "Vanalinn", style: "Medieval guild house", nightlyFrom: 86, rating: 4.6 },
-      { name: "Telliskivi Rooms", area: "Kalamaja", style: "Creative quarter", nightlyFrom: 58, rating: 4.4 },
+      {
+        name: "Old Town Guild",
+        area: "Vanalinn",
+        style: "Medieval guild house",
+        nightlyFrom: 86,
+        rating: 4.6,
+      },
+      {
+        name: "Telliskivi Rooms",
+        area: "Kalamaja",
+        style: "Creative quarter",
+        nightlyFrom: 58,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -624,8 +870,20 @@ export const CITIES: CityRecord[] = [
     scores: s(68, 82, 84, 86, 84, 96, 88, 58, 84),
     dayTrips: ["Zaanse Schans", "Haarlem", "Utrecht canals"],
     hotels: [
-      { name: "Jordaan Canal House", area: "Jordaan", style: "Canal house", nightlyFrom: 172, rating: 4.6 },
-      { name: "De Pijp Studio", area: "De Pijp", style: "Neighbourhood studio", nightlyFrom: 118, rating: 4.4 },
+      {
+        name: "Jordaan Canal House",
+        area: "Jordaan",
+        style: "Canal house",
+        nightlyFrom: 172,
+        rating: 4.6,
+      },
+      {
+        name: "De Pijp Studio",
+        area: "De Pijp",
+        style: "Neighbourhood studio",
+        nightlyFrom: 118,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -650,8 +908,20 @@ export const CITIES: CityRecord[] = [
     scores: s(62, 96, 96, 94, 94, 99, 84, 52, 96),
     dayTrips: ["Versailles", "Giverny gardens", "Fontainebleau forest"],
     hotels: [
-      { name: "Marais Maison", area: "Le Marais", style: "Quiet courtyard hotel", nightlyFrom: 195, rating: 4.7 },
-      { name: "Canal Saint-Martin Rooms", area: "10e", style: "Local and lively", nightlyFrom: 128, rating: 4.4 },
+      {
+        name: "Marais Maison",
+        area: "Le Marais",
+        style: "Quiet courtyard hotel",
+        nightlyFrom: 195,
+        rating: 4.7,
+      },
+      {
+        name: "Canal Saint-Martin Rooms",
+        area: "10e",
+        style: "Local and lively",
+        nightlyFrom: 128,
+        rating: 4.4,
+      },
     ],
     highlights: [
       {
@@ -676,8 +946,20 @@ export const CITIES: CityRecord[] = [
     scores: s(58, 96, 76, 92, 99, 94, 78, 56, 82),
     dayTrips: ["Ostia Antica", "Tivoli villas", "Castelli Romani"],
     hotels: [
-      { name: "Trastevere Courtyard", area: "Trastevere", style: "Courtyard boutique", nightlyFrom: 138, rating: 4.6 },
-      { name: "Monti Attic", area: "Monti", style: "Attic with a terrace", nightlyFrom: 104, rating: 4.5 },
+      {
+        name: "Trastevere Courtyard",
+        area: "Trastevere",
+        style: "Courtyard boutique",
+        nightlyFrom: 138,
+        rating: 4.6,
+      },
+      {
+        name: "Monti Attic",
+        area: "Monti",
+        style: "Attic with a terrace",
+        nightlyFrom: 104,
+        rating: 4.5,
+      },
     ],
     highlights: [
       {
@@ -702,8 +984,20 @@ export const CITIES: CityRecord[] = [
     scores: s(72, 94, 82, 92, 96, 96, 66, 60, 88),
     dayTrips: ["Chianti wine road", "Siena", "Cinque Terre"],
     hotels: [
-      { name: "Oltrarno Residence", area: "Oltrarno", style: "Artisan quarter", nightlyFrom: 142, rating: 4.7 },
-      { name: "Santa Croce Rooms", area: "Santa Croce", style: "Central and simple", nightlyFrom: 96, rating: 4.3 },
+      {
+        name: "Oltrarno Residence",
+        area: "Oltrarno",
+        style: "Artisan quarter",
+        nightlyFrom: 142,
+        rating: 4.7,
+      },
+      {
+        name: "Santa Croce Rooms",
+        area: "Santa Croce",
+        style: "Central and simple",
+        nightlyFrom: 96,
+        rating: 4.3,
+      },
     ],
     highlights: [
       {
@@ -728,8 +1022,20 @@ export const CITIES: CityRecord[] = [
     scores: s(64, 99, 72, 82, 88, 78, 80, 56, 74),
     dayTrips: ["Modena balsamic estates", "Ravenna mosaics", "Parma"],
     hotels: [
-      { name: "Portici House", area: "Centro", style: "Under the arcades", nightlyFrom: 108, rating: 4.6 },
-      { name: "Bolognina Studio", area: "Bolognina", style: "Value studio", nightlyFrom: 68, rating: 4.2 },
+      {
+        name: "Portici House",
+        area: "Centro",
+        style: "Under the arcades",
+        nightlyFrom: 108,
+        rating: 4.6,
+      },
+      {
+        name: "Bolognina Studio",
+        area: "Bolognina",
+        style: "Value studio",
+        nightlyFrom: 68,
+        rating: 4.2,
+      },
     ],
     highlights: [
       {
@@ -757,6 +1063,7 @@ export const POPULAR_ORIGINS = [
 ];
 
 export const ORIGIN_COORDS: Record<string, { lat: number; lon: number }> = {
+  karachi: { lat: 24.8607, lon: 67.0011 },
   london: { lat: 51.5072, lon: -0.1276 },
   paris: { lat: 48.8566, lon: 2.3522 },
   berlin: { lat: 52.52, lon: 13.405 },

@@ -9,12 +9,18 @@ interface PageShellProps {
   /** Extra bottom padding so the mobile nav never covers content. */
   footer?: boolean;
   landing?: boolean;
+  tripDetail?: boolean;
 }
 
-export function PageShell({ children, footer = true, landing = false }: PageShellProps) {
+export function PageShell({
+  children,
+  footer = true,
+  landing = false,
+  tripDetail = false,
+}: PageShellProps) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader landing={landing} />
+    <div className={`flex min-h-screen flex-col ${tripDetail ? "bg-[#edf7f9]" : ""}`}>
+      <SiteHeader landing={landing} tripDetail={tripDetail} />
       <main id="main" className="flex-1 pb-28 md:pb-0">
         {children}
       </main>

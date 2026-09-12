@@ -99,7 +99,9 @@ export function personalisedWhy(
 
   if (factors.length < 2 && prefs.notes?.trim()) {
     const note = prefs.notes.trim();
-    factors.push(`it also fits what you told us: “${note.length > 70 ? `${note.slice(0, 67)}…` : note}”`);
+    factors.push(
+      `it also fits what you told us: “${note.length > 70 ? `${note.slice(0, 67)}…` : note}”`,
+    );
   }
 
   if (factors.length < 2) {
@@ -131,6 +133,16 @@ function pickForSlot(
   return list[offset % list.length];
 }
 
+function providerCategory(value: string): ExperienceCategory {
+  const category = value.toLowerCase();
+  if (category.includes("museum")) return "museum";
+  if (category.includes("natural") || category.includes("park")) return "nature";
+  if (category.includes("view")) return "viewpoint";
+  if (category.includes("food") || category.includes("market")) return "food";
+  if (category.includes("beach") || category.includes("water")) return "coast";
+  return "landmark";
+}
+
 /** Image-led, explained experiences for one itinerary day. */
 export function buildDayExperiences(
   day: DayPlan,
@@ -138,15 +150,133 @@ export function buildDayExperiences(
   prefs: TripPreferences,
 ): DayExperienceSet {
   if (!stop) return { slots: [], restaurant: null };
-
-  const pool = getAttractions(stop, prefs, 8);
-  const restaurants = getRestaurants(stop, prefs, 4);
-  const used = new Set<string>();
   const hooks: Record<DaySlot, string> = {
     morning: day.morning,
     afternoon: day.afternoon,
     evening: day.evening,
   };
+
+  if (day.experiences?.length) {
+    const slotOrder = Object.keys(SLOT_LABEL) as DaySlot[];
+    const slots = day.experiences.map((place, index) => {
+      const slot = slotOrder[index] ?? "afternoon";
+      const category = providerCategory(place.category);
+      // Provider-backed places must never inherit a generic category image.
+      // An absent provider photo stays absent and is handled by SafeProviderImage.
+      const resolved = {
+        src: place.image ?? "",
+        gallery: place.image ? [place.image] : [],
+      };
+      const attraction: Attraction = {
+        id: `${place.id}-d${day.day}-${slot}`,
+        cityId: stop.id,
+        city: stop.name,
+        name: place.name,
+        category,
+        image: resolved.src,
+        gallery: resolved.gallery,
+        rating: place.rating ?? 0,
+        popularity:
+          place.reviewCount == null
+            ? 50
+            : Math.min(100, Math.round(Math.log10(Math.max(1, place.reviewCount)) * 24)),
+        historicNote: place.description ?? place.address ?? "Live provider place information",
+        visitMinutes: slot === "morning" ? 120 : 90,
+        bestFor: [CATEGORY_LABEL[category], SLOT_LABEL[slot]],
+        why: personalisedWhy(
+          {
+            id: place.id,
+            cityId: stop.id,
+            city: stop.name,
+            name: place.name,
+            category,
+            image: resolved.src,
+            gallery: resolved.gallery,
+            rating: place.rating ?? 0,
+            popularity:
+              place.reviewCount == null
+                ? 50
+                : Math.min(100, Math.round(Math.log10(Math.max(1, place.reviewCount)) * 24)),
+            historicNote: place.description ?? place.address ?? "Live provider place information",
+            visitMinutes: 90,
+            bestFor: [CATEGORY_LABEL[category]],
+            why: "",
+            location: place.address ?? stop.name,
+            priceLabel: "Check locally",
+            quality: place.quality,
+          },
+          slot,
+          prefs,
+        ),
+        location: place.address ?? stop.name,
+        priceLabel: "Check locally",
+        quality: place.quality,
+        providerUrl: place.providerUrl,
+        website: place.website,
+        photoAttributions: place.photoAttributions,
+        provider:
+          place.provider === "google" || place.provider === "overpass" ? place.provider : undefined,
+        providerPlaceId: place.providerPlaceId,
+        sourceStatus:
+          place.sourceStatus === "google-live" ||
+          place.sourceStatus === "google-cache" ||
+          place.sourceStatus === "overpass-live"
+            ? place.sourceStatus
+            : undefined,
+        lat: place.lat,
+        lon: place.lon,
+      };
+      return {
+        slot,
+        label: SLOT_LABEL[slot],
+        attraction,
+        hook: place.description ?? hooks[slot],
+        tags: [CATEGORY_LABEL[category]],
+      };
+    });
+
+    const providerRestaurant = day.restaurantDetails;
+    const restaurant: Restaurant | null = providerRestaurant
+      ? {
+          id: `${providerRestaurant.id}-d${day.day}`,
+          cityId: stop.id,
+          city: stop.name,
+          name: providerRestaurant.name,
+          cuisine: providerRestaurant.category?.replaceAll("_", " ") ?? "Local cuisine",
+          image: providerRestaurant.image ?? "",
+          rating: providerRestaurant.rating ?? 0,
+          priceLevel: 2,
+          signatureDish: "Ask for the local speciality",
+          diets: prefs.diets,
+          walkMinutes: 15,
+          area: providerRestaurant.address ?? stop.name,
+          why: providerRestaurant.description ?? "A live local food venue near today's route.",
+          quality: providerRestaurant.quality,
+          providerUrl: providerRestaurant.providerUrl,
+          website: providerRestaurant.website,
+          photoAttributions: providerRestaurant.photoAttributions,
+          provider:
+            providerRestaurant.provider === "google" || providerRestaurant.provider === "overpass"
+              ? providerRestaurant.provider
+              : undefined,
+          providerPlaceId: providerRestaurant.providerPlaceId,
+          sourceStatus:
+            providerRestaurant.sourceStatus === "google-live" ||
+            providerRestaurant.sourceStatus === "google-cache" ||
+            providerRestaurant.sourceStatus === "overpass-live"
+              ? providerRestaurant.sourceStatus
+              : undefined,
+          lat: providerRestaurant.lat,
+          lon: providerRestaurant.lon,
+        }
+      : null;
+
+    return { slots, restaurant };
+  }
+
+  const pool = getAttractions(stop, prefs, 8);
+  const restaurants = getRestaurants(stop, prefs, 4);
+  const used = new Set<string>();
 
   const slots = (Object.keys(SLOT_LABEL) as DaySlot[]).map((slot, index) => {
     const base = pickForSlot(pool, slot, used, day.day + index);

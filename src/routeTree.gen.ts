@@ -10,17 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as CollaborateTokenRouteImport } from './routes/collaborate/$token'
+import { Route as ResultsSimulateRouteImport } from './routes/results_.simulate'
 import { Route as TripTripIdRouteImport } from './routes/trip.$tripId'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
+import { Route as ApiCollaborationIndexRouteImport } from './routes/api/collaboration/index'
+import { Route as ApiCollaborationTokenRouteImport } from './routes/api/collaboration/$token'
 import { Route as ApiFlightsSearchRouteImport } from './routes/api/flights/search'
 import { Route as ApiHotelsSearchRouteImport } from './routes/api/hotels/search'
+import { Route as ApiImagesMoodRouteImport } from './routes/api/images/mood'
+import { Route as ApiPlannerEditRouteImport } from './routes/api/planner/edit'
+import { Route as ApiPlannerPlanRouteImport } from './routes/api/planner/plan'
+import { Route as ApiPoisPhotoRouteImport } from './routes/api/pois/photo'
+import { Route as ApiPoisSearchRouteImport } from './routes/api/pois/search'
+import { Route as ApiRegionsNearbyRouteImport } from './routes/api/regions/nearby'
+import { Route as TripTripIdJourneyRouteImport } from './routes/trip.$tripId.journey'
+import { Route as ApiAuthOauthProviderRouteImport } from './routes/api/auth/oauth/$provider'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanRoute = PlanRouteImport.update({
@@ -38,14 +73,59 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CollaborateTokenRoute = CollaborateTokenRouteImport.update({
+  id: '/collaborate/$token',
+  path: '/collaborate/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsSimulateRoute = ResultsSimulateRouteImport.update({
+  id: '/results_/simulate',
+  path: '/results/simulate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TripTripIdRoute = TripTripIdRouteImport.update({
   id: '/trip/$tripId',
   path: '/trip/$tripId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
+  id: '/api/auth/signup',
+  path: '/api/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCollaborationIndexRoute = ApiCollaborationIndexRouteImport.update({
+  id: '/api/collaboration/',
+  path: '/api/collaboration/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCollaborationTokenRoute = ApiCollaborationTokenRouteImport.update({
+  id: '/api/collaboration/$token',
+  path: '/api/collaboration/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFlightsSearchRoute = ApiFlightsSearchRouteImport.update({
@@ -58,80 +138,259 @@ const ApiHotelsSearchRoute = ApiHotelsSearchRouteImport.update({
   path: '/api/hotels/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiImagesMoodRoute = ApiImagesMoodRouteImport.update({
+  id: '/api/images/mood',
+  path: '/api/images/mood',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerEditRoute = ApiPlannerEditRouteImport.update({
+  id: '/api/planner/edit',
+  path: '/api/planner/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlannerPlanRoute = ApiPlannerPlanRouteImport.update({
+  id: '/api/planner/plan',
+  path: '/api/planner/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPoisPhotoRoute = ApiPoisPhotoRouteImport.update({
+  id: '/api/pois/photo',
+  path: '/api/pois/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPoisSearchRoute = ApiPoisSearchRouteImport.update({
+  id: '/api/pois/search',
+  path: '/api/pois/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRegionsNearbyRoute = ApiRegionsNearbyRouteImport.update({
+  id: '/api/regions/nearby',
+  path: '/api/regions/nearby',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TripTripIdJourneyRoute = TripTripIdJourneyRouteImport.update({
+  id: '/journey',
+  path: '/journey',
+  getParentRoute: () => TripTripIdRoute,
+} as any)
+const ApiAuthOauthProviderRoute = ApiAuthOauthProviderRouteImport.update({
+  id: '/api/auth/oauth/$provider',
+  path: '/api/auth/oauth/$provider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/plan': typeof PlanRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/trip/$tripId': typeof TripTripIdRoute
+  '/collaborate/$token': typeof CollaborateTokenRoute
+  '/results/simulate': typeof ResultsSimulateRoute
+  '/trip/$tripId': typeof TripTripIdRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/collaboration/$token': typeof ApiCollaborationTokenRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
   '/api/hotels/search': typeof ApiHotelsSearchRoute
+  '/api/images/mood': typeof ApiImagesMoodRoute
+  '/api/planner/edit': typeof ApiPlannerEditRoute
+  '/api/planner/plan': typeof ApiPlannerPlanRoute
+  '/api/pois/photo': typeof ApiPoisPhotoRoute
+  '/api/pois/search': typeof ApiPoisSearchRoute
+  '/api/regions/nearby': typeof ApiRegionsNearbyRoute
+  '/trip/$tripId/journey': typeof TripTripIdJourneyRoute
+  '/api/collaboration/': typeof ApiCollaborationIndexRoute
+  '/api/auth/oauth/$provider': typeof ApiAuthOauthProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/plan': typeof PlanRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/trip/$tripId': typeof TripTripIdRoute
+  '/collaborate/$token': typeof CollaborateTokenRoute
+  '/results/simulate': typeof ResultsSimulateRoute
+  '/trip/$tripId': typeof TripTripIdRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/collaboration/$token': typeof ApiCollaborationTokenRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
   '/api/hotels/search': typeof ApiHotelsSearchRoute
+  '/api/images/mood': typeof ApiImagesMoodRoute
+  '/api/planner/edit': typeof ApiPlannerEditRoute
+  '/api/planner/plan': typeof ApiPlannerPlanRoute
+  '/api/pois/photo': typeof ApiPoisPhotoRoute
+  '/api/pois/search': typeof ApiPoisSearchRoute
+  '/api/regions/nearby': typeof ApiRegionsNearbyRoute
+  '/trip/$tripId/journey': typeof TripTripIdJourneyRoute
+  '/api/collaboration': typeof ApiCollaborationIndexRoute
+  '/api/auth/oauth/$provider': typeof ApiAuthOauthProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/plan': typeof PlanRoute
   '/results': typeof ResultsRoute
   '/saved': typeof SavedRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/trip/$tripId': typeof TripTripIdRoute
+  '/collaborate/$token': typeof CollaborateTokenRoute
+  '/results_/simulate': typeof ResultsSimulateRoute
+  '/trip/$tripId': typeof TripTripIdRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/collaboration/$token': typeof ApiCollaborationTokenRoute
   '/api/flights/search': typeof ApiFlightsSearchRoute
   '/api/hotels/search': typeof ApiHotelsSearchRoute
+  '/api/images/mood': typeof ApiImagesMoodRoute
+  '/api/planner/edit': typeof ApiPlannerEditRoute
+  '/api/planner/plan': typeof ApiPlannerPlanRoute
+  '/api/pois/photo': typeof ApiPoisPhotoRoute
+  '/api/pois/search': typeof ApiPoisSearchRoute
+  '/api/regions/nearby': typeof ApiRegionsNearbyRoute
+  '/trip/$tripId/journey': typeof TripTripIdJourneyRoute
+  '/api/collaboration/': typeof ApiCollaborationIndexRoute
+  '/api/auth/oauth/$provider': typeof ApiAuthOauthProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/login'
+    | '/onboarding'
     | '/plan'
     | '/results'
     | '/saved'
+    | '/signup'
     | '/sitemap.xml'
+    | '/collaborate/$token'
+    | '/results/simulate'
     | '/trip/$tripId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/signup'
+    | '/api/collaboration/$token'
     | '/api/flights/search'
     | '/api/hotels/search'
+    | '/api/images/mood'
+    | '/api/planner/edit'
+    | '/api/planner/plan'
+    | '/api/pois/photo'
+    | '/api/pois/search'
+    | '/api/regions/nearby'
+    | '/trip/$tripId/journey'
+    | '/api/collaboration/'
+    | '/api/auth/oauth/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/login'
+    | '/onboarding'
     | '/plan'
     | '/results'
     | '/saved'
+    | '/signup'
     | '/sitemap.xml'
+    | '/collaborate/$token'
+    | '/results/simulate'
     | '/trip/$tripId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/signup'
+    | '/api/collaboration/$token'
     | '/api/flights/search'
     | '/api/hotels/search'
+    | '/api/images/mood'
+    | '/api/planner/edit'
+    | '/api/planner/plan'
+    | '/api/pois/photo'
+    | '/api/pois/search'
+    | '/api/regions/nearby'
+    | '/trip/$tripId/journey'
+    | '/api/collaboration'
+    | '/api/auth/oauth/$provider'
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/login'
+    | '/onboarding'
     | '/plan'
     | '/results'
     | '/saved'
+    | '/signup'
     | '/sitemap.xml'
+    | '/collaborate/$token'
+    | '/results_/simulate'
     | '/trip/$tripId'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/signup'
+    | '/api/collaboration/$token'
     | '/api/flights/search'
     | '/api/hotels/search'
+    | '/api/images/mood'
+    | '/api/planner/edit'
+    | '/api/planner/plan'
+    | '/api/pois/photo'
+    | '/api/pois/search'
+    | '/api/regions/nearby'
+    | '/trip/$tripId/journey'
+    | '/api/collaboration/'
+    | '/api/auth/oauth/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   PlanRoute: typeof PlanRoute
   ResultsRoute: typeof ResultsRoute
   SavedRoute: typeof SavedRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TripTripIdRoute: typeof TripTripIdRoute
+  CollaborateTokenRoute: typeof CollaborateTokenRoute
+  ResultsSimulateRoute: typeof ResultsSimulateRoute
+  TripTripIdRoute: typeof TripTripIdRouteWithChildren
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiAuthSignupRoute: typeof ApiAuthSignupRoute
+  ApiCollaborationTokenRoute: typeof ApiCollaborationTokenRoute
   ApiFlightsSearchRoute: typeof ApiFlightsSearchRoute
   ApiHotelsSearchRoute: typeof ApiHotelsSearchRoute
+  ApiImagesMoodRoute: typeof ApiImagesMoodRoute
+  ApiPlannerEditRoute: typeof ApiPlannerEditRoute
+  ApiPlannerPlanRoute: typeof ApiPlannerPlanRoute
+  ApiPoisPhotoRoute: typeof ApiPoisPhotoRoute
+  ApiPoisSearchRoute: typeof ApiPoisSearchRoute
+  ApiRegionsNearbyRoute: typeof ApiRegionsNearbyRoute
+  ApiCollaborationIndexRoute: typeof ApiCollaborationIndexRoute
+  ApiAuthOauthProviderRoute: typeof ApiAuthOauthProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +400,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plan': {
@@ -164,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -171,11 +458,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/collaborate/$token': {
+      id: '/collaborate/$token'
+      path: '/collaborate/$token'
+      fullPath: '/collaborate/$token'
+      preLoaderRoute: typeof CollaborateTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results_/simulate': {
+      id: '/results_/simulate'
+      path: '/results/simulate'
+      fullPath: '/results/simulate'
+      preLoaderRoute: typeof ResultsSimulateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/trip/$tripId': {
       id: '/trip/$tripId'
       path: '/trip/$tripId'
       fullPath: '/trip/$tripId'
       preLoaderRoute: typeof TripTripIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/signup': {
+      id: '/api/auth/signup'
+      path: '/api/auth/signup'
+      fullPath: '/api/auth/signup'
+      preLoaderRoute: typeof ApiAuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/collaboration/': {
+      id: '/api/collaboration/'
+      path: '/api/collaboration'
+      fullPath: '/api/collaboration/'
+      preLoaderRoute: typeof ApiCollaborationIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/collaboration/$token': {
+      id: '/api/collaboration/$token'
+      path: '/api/collaboration/$token'
+      fullPath: '/api/collaboration/$token'
+      preLoaderRoute: typeof ApiCollaborationTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/flights/search': {
@@ -192,18 +535,105 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiHotelsSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/images/mood': {
+      id: '/api/images/mood'
+      path: '/api/images/mood'
+      fullPath: '/api/images/mood'
+      preLoaderRoute: typeof ApiImagesMoodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/edit': {
+      id: '/api/planner/edit'
+      path: '/api/planner/edit'
+      fullPath: '/api/planner/edit'
+      preLoaderRoute: typeof ApiPlannerEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/planner/plan': {
+      id: '/api/planner/plan'
+      path: '/api/planner/plan'
+      fullPath: '/api/planner/plan'
+      preLoaderRoute: typeof ApiPlannerPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pois/photo': {
+      id: '/api/pois/photo'
+      path: '/api/pois/photo'
+      fullPath: '/api/pois/photo'
+      preLoaderRoute: typeof ApiPoisPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pois/search': {
+      id: '/api/pois/search'
+      path: '/api/pois/search'
+      fullPath: '/api/pois/search'
+      preLoaderRoute: typeof ApiPoisSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/regions/nearby': {
+      id: '/api/regions/nearby'
+      path: '/api/regions/nearby'
+      fullPath: '/api/regions/nearby'
+      preLoaderRoute: typeof ApiRegionsNearbyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trip/$tripId/journey': {
+      id: '/trip/$tripId/journey'
+      path: '/journey'
+      fullPath: '/trip/$tripId/journey'
+      preLoaderRoute: typeof TripTripIdJourneyRouteImport
+      parentRoute: typeof TripTripIdRoute
+    }
+    '/api/auth/oauth/$provider': {
+      id: '/api/auth/oauth/$provider'
+      path: '/api/auth/oauth/$provider'
+      fullPath: '/api/auth/oauth/$provider'
+      preLoaderRoute: typeof ApiAuthOauthProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface TripTripIdRouteChildren {
+  TripTripIdJourneyRoute: typeof TripTripIdJourneyRoute
+}
+
+const TripTripIdRouteChildren: TripTripIdRouteChildren = {
+  TripTripIdJourneyRoute: TripTripIdJourneyRoute,
+}
+
+const TripTripIdRouteWithChildren = TripTripIdRoute._addFileChildren(
+  TripTripIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   PlanRoute: PlanRoute,
   ResultsRoute: ResultsRoute,
   SavedRoute: SavedRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TripTripIdRoute: TripTripIdRoute,
+  CollaborateTokenRoute: CollaborateTokenRoute,
+  ResultsSimulateRoute: ResultsSimulateRoute,
+  TripTripIdRoute: TripTripIdRouteWithChildren,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiAuthSignupRoute: ApiAuthSignupRoute,
+  ApiCollaborationTokenRoute: ApiCollaborationTokenRoute,
   ApiFlightsSearchRoute: ApiFlightsSearchRoute,
   ApiHotelsSearchRoute: ApiHotelsSearchRoute,
+  ApiImagesMoodRoute: ApiImagesMoodRoute,
+  ApiPlannerEditRoute: ApiPlannerEditRoute,
+  ApiPlannerPlanRoute: ApiPlannerPlanRoute,
+  ApiPoisPhotoRoute: ApiPoisPhotoRoute,
+  ApiPoisSearchRoute: ApiPoisSearchRoute,
+  ApiRegionsNearbyRoute: ApiRegionsNearbyRoute,
+  ApiCollaborationIndexRoute: ApiCollaborationIndexRoute,
+  ApiAuthOauthProviderRoute: ApiAuthOauthProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

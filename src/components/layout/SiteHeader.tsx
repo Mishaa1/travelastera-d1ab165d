@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/layout/Wordmark";
 import { cn } from "@/lib/utils";
+import type { PublicUser } from "@/lib/auth/types";
+import { authApi } from "@/services/authService";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -21,9 +23,24 @@ const LANDING_NAV = [
   { to: "/saved", label: "Saved" },
 ] as const;
 
-export function SiteHeader({ landing = false }: { landing?: boolean }) {
+const TRIP_NAV = [
+  { to: "/results", label: "Discover" },
+  { to: "/saved", label: "Itineraries" },
+  { to: "/results", label: "Destinations" },
+  { to: "/", label: "About" },
+] as const;
+
+export function SiteHeader({
+  landing = false,
+  tripDetail = false,
+}: {
+  landing?: boolean;
+  tripDetail?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<PublicUser | null>(null);
+  useEffect(() => { void authApi.me().then(({ user }) => setUser(user)).catch(() => undefined); }, []);
   const { scrollY } = useScroll();
   const blur = useTransform(scrollY, [0, 120], [0, 1]);
   useMotionValueEvent(scrollY, "change", (latest) => setScrolled(latest > 72));
@@ -40,13 +57,14 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
         <Link to="/" className="flex min-w-0 items-center" aria-label="Astera home">
           <Wordmark
             withMark={!landing}
+            signature
             size="md"
             className={lightOnHero ? "text-white" : "text-foreground"}
           />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
-          {(landing ? LANDING_NAV : NAV).map((item) => (
+          {(tripDetail ? TRIP_NAV : landing ? LANDING_NAV : NAV).map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -65,8 +83,21 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm" className={cn("hidden sm:inline-flex", lightOnHero && "text-white hover:bg-white/10 hover:text-white")}>
+            <Link to={user ? "/account" : "/login"}>{user ? user.name.split(" ")[0] : "Log in"}</Link>
+          </Button>
+          {tripDetail && (
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden rounded-full sm:inline-flex"
+            >
+              <Link to="/saved">Saved</Link>
+            </Button>
+          )}
           <Button asChild variant="hero" size="sm" className="hidden sm:inline-flex">
-            <Link to="/plan">{landing ? "Plan your trip" : "Optimise a trip"}</Link>
+            <Link to="/plan">{landing || tripDetail ? "Plan my trip" : "Optimise a trip"}</Link>
           </Button>
           <button
             type="button"

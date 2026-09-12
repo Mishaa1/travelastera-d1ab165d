@@ -1,6 +1,8 @@
 import { ESTIMATE_QUALITY } from "@/api/config";
 import { distanceKm } from "@/services/geocodeService";
 import type { DataQuality, GeoPoint } from "@/lib/types";
+import { toIataCode } from "@/lib/flights/iata";
+import type { NormalisedFlightOffer } from "@/lib/flights/types";
 
 /**
  * Flight pricing service.
@@ -58,6 +60,56 @@ function estimateOffer(params: FlightSearchParams): FlightOffer {
 }
 
 export async function searchFlights(params: FlightSearchParams): Promise<FlightOffer> {
+  if (typeof window !== "undefined") {
+    const origin = toIataCode(params.origin.name);
+    const destination = toIataCode(params.destination.name);
+    if (origin && destination && origin !== destination) {
+      try {
+        const response = await fetch("/api/flights/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            origin,
+            destinations: [destination],
+            departureDate: params.date,
+            travellers: params.travellers,
+            cabin: "economy",
+          }),
+          signal: AbortSignal.timeout(12_500),
+        });
+        const payload = (await response.json()) as {
+          results?: { offers?: NormalisedFlightOffer[] }[];
+          requiredLiveData?: boolean;
+          error?: string;
+        };
+        const live = payload.results?.[0]?.offers?.[0];
+        if (response.ok && live) {
+          return {
+            id: live.offerId,
+            carrier: live.airlineName,
+            pricePerTraveller: Math.round(live.totalAmount / Math.max(1, params.travellers)),
+            totalPrice: live.totalAmount,
+            durationHours: Math.round((live.durationMinutes / 60) * 10) / 10,
+            stops: live.stops,
+            quality: {
+              source: live.status === "live" ? "live" : "test",
+              provider: "Duffel",
+            },
+          };
+        }
+        if (payload.requiredLiveData) {
+          throw new Error(
+            payload.error ?? "Live Duffel offers are required but unavailable for this leg.",
+          );
+        }
+      } catch (error) {
+        // Re-throw strict live-data failures; ordinary production failures may estimate.
+        if (error instanceof Error && /required|Live Duffel/i.test(error.message)) {
+          throw error;
+        }
+      }
+    }
+  }
   return estimateOffer(params);
 }
 

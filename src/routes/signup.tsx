@@ -1,0 +1,18 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff, Mail } from "lucide-react";
+import { useState } from "react";
+import { AuthBenefits, AuthBrandPanel } from "@/components/auth/AuthBrandPanel";
+import { SsoButtons } from "@/components/auth/SsoButtons";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Wordmark } from "@/components/layout/Wordmark";
+import { authApi } from "@/services/authService";
+
+export const Route = createFileRoute("/signup")({ head:()=>({meta:[{title:"Create your ASTERA account"}]}), component: SignupPage });
+function SignupPage() {
+  const navigate = useNavigate(); const [show,setShow]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
+  return <main className="min-h-screen bg-[#f7f4ee] px-4 py-8 sm:px-6"><header className="mx-auto mb-7 max-w-6xl text-center"><Wordmark withMark signature/><h1 className="mt-5 font-serif-display text-3xl font-medium md:text-4xl">Welcome to <span className="text-teal">ASTERA.</span> Let’s start by saving your trips and learning what you love.</h1></header>
+    <section className="mx-auto grid max-w-6xl overflow-hidden rounded-[1.8rem] bg-white shadow-[0_28px_80px_-45px_rgba(3,26,39,.45)] lg:grid-cols-[.9fr_1.1fr]"><AuthBrandPanel/><div className="flex min-h-[680px] items-center p-7 sm:p-12"><div className="mx-auto w-full max-w-md"><p className="text-[10px] font-bold tracking-[.18em] text-teal uppercase">Create your account</p><h2 className="mt-2 font-serif-display text-4xl">Start planning smarter trips.</h2><p className="mt-2 text-sm text-muted-foreground">Save recommendations and let ASTERA learn what fits you.</p><div className="mt-7"><SsoButtons/></div><div className="my-6 flex items-center gap-3 text-[10px] text-muted-foreground"><span className="h-px flex-1 bg-border"/>OR<span className="h-px flex-1 bg-border"/></div>
+      <form className="space-y-3" onSubmit={async(e)=>{e.preventDefault();setBusy(true);setError("");const form=new FormData(e.currentTarget);try{await authApi.signup({name:String(form.get("name")),email:String(form.get("email")),password:String(form.get("password"))});await navigate({to:"/onboarding"});}catch(err){setError(err instanceof Error?err.message:"Could not create account.");}finally{setBusy(false);}}}><Input name="name" autoComplete="name" required minLength={2} placeholder="Full name" className="h-12 rounded-xl"/><Input name="email" type="email" autoComplete="email" required placeholder="Email address" className="h-12 rounded-xl"/><label className="relative block"><Input name="password" type={show?"text":"password"} autoComplete="new-password" required minLength={8} placeholder="Create password" className="h-12 rounded-xl pr-12"/><button type="button" onClick={()=>setShow(!show)} className="absolute top-0 right-0 grid h-12 w-12 place-items-center" aria-label={show?"Hide password":"Show password"}>{show?<EyeOff className="h-4 w-4"/>:<Eye className="h-4 w-4"/>}</button></label>{error&&<p role="alert" className="text-sm text-destructive">{error}</p>}<Button type="submit" variant="hero" className="h-12 w-full rounded-xl" disabled={busy}><Mail/>{busy?"Creating account…":"Create account"}</Button></form>
+      <p className="mt-5 text-center text-[10px] leading-relaxed text-muted-foreground">By signing up, you agree to responsible use of ASTERA and our privacy-first data policy.</p><p className="mt-12 text-center text-sm text-muted-foreground">Already have an account? <Link to="/login" className="font-semibold text-teal hover:underline">Log in</Link></p></div></div></section><AuthBenefits/></main>;
+}

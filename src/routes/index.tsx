@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MotionConfig } from "motion/react";
 
 import { Hero } from "@/components/landing/Hero";
+import { AsteraAdvantage } from "@/components/landing/AsteraAdvantage";
 import { ReferenceStory } from "@/components/landing/ReferenceStory";
 import { PageShell } from "@/components/layout/PageShell";
 
@@ -26,6 +27,7 @@ function LandingPage() {
     <MotionConfig reducedMotion="user">
       <PageShell landing footer={false}>
         <Hero />
+        <AsteraAdvantage />
         <ReferenceStory />
       </PageShell>
     </MotionConfig>

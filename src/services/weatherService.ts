@@ -29,7 +29,10 @@ function seasonalEstimate(city: string, point: GeoPoint, date: string): StopWeat
   const summerness = Math.cos(((month - 6) / 12) * Math.PI * 2);
   const latitudeDrag = (point.lat - 40) * 0.55;
   const tempC = Math.round(19 + summerness * 8 - latitudeDrag);
-  const rainChance = Math.max(5, Math.min(80, Math.round(34 - summerness * 14 + latitudeDrag * 1.6)));
+  const rainChance = Math.max(
+    5,
+    Math.min(80, Math.round(34 - summerness * 14 + latitudeDrag * 1.6)),
+  );
   return {
     city,
     tempC,
@@ -50,6 +53,7 @@ export async function getStopWeather(
   return withFallback(
     async () => {
       const data = await apiGet<OpenMeteoResponse>(`${API_CONFIG.weather.baseUrl}/forecast`, {
+        timeoutMs: 2_500,
         query: {
           latitude: point.lat,
           longitude: point.lon,

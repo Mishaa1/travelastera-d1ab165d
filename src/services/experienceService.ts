@@ -1,14 +1,7 @@
 import { ESTIMATE_QUALITY, MOCK_QUALITY } from "@/api/config";
 import { CITY_BY_ID, type CityRecord } from "@/data/cities";
 import { distanceKm } from "@/services/geocodeService";
-import type {
-  Activity,
-  DataQuality,
-  Diet,
-  RouteLeg,
-  TripPreferences,
-  TripStop,
-} from "@/lib/types";
+import type { Activity, DataQuality, Diet, RouteLeg, TripPreferences, TripStop } from "@/lib/types";
 
 import landmark from "@/assets/exp-landmark.jpg";
 import museum from "@/assets/exp-museum.jpg";
@@ -30,14 +23,7 @@ import viewpoint from "@/assets/exp-view.jpg";
  */
 
 export type ExperienceCategory =
-  | "landmark"
-  | "museum"
-  | "nature"
-  | "viewpoint"
-  | "market"
-  | "coast"
-  | "nightlife"
-  | "food";
+  "landmark" | "museum" | "nature" | "viewpoint" | "market" | "coast" | "nightlife" | "food";
 
 const CATEGORY_IMAGE: Record<ExperienceCategory, string> = {
   landmark,
@@ -80,6 +66,14 @@ export interface Attraction {
   location: string;
   priceLabel: string;
   quality: DataQuality;
+  providerUrl?: string;
+  website?: string;
+  photoAttributions?: Array<{ displayName?: string; uri?: string; photoUri?: string }>;
+  provider?: "google" | "overpass";
+  providerPlaceId?: string;
+  sourceStatus?: "google-live" | "google-cache" | "overpass-live";
+  lat?: number;
+  lon?: number;
 }
 
 export type PriceLevel = 1 | 2 | 3 | 4;
@@ -99,6 +93,14 @@ export interface Restaurant {
   area: string;
   why: string;
   quality: DataQuality;
+  providerUrl?: string;
+  website?: string;
+  photoAttributions?: Array<{ displayName?: string; uri?: string; photoUri?: string }>;
+  provider?: "google" | "overpass";
+  providerPlaceId?: string;
+  sourceStatus?: "google-live" | "google-cache" | "overpass-live";
+  lat?: number;
+  lon?: number;
 }
 
 export type DayTripLength = "Half day" | "Full day" | "Weekend";
@@ -154,7 +156,7 @@ function hash(seed: string): number {
   return Math.abs(value);
 }
 
-const pick = <T,>(items: readonly T[], seed: string) => items[hash(seed) % items.length];
+const pick = <T>(items: readonly T[], seed: string) => items[hash(seed) % items.length];
 const between = (seed: string, min: number, max: number) => min + (hash(seed) % (max - min + 1));
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -162,7 +164,12 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 // ------------------------------------------------------------ attractions
 
 const NAME_BANK: Record<ExperienceCategory, string[]> = {
-  landmark: ["{city} Old Town", "The Royal Palace of {city}", "{city} Cathedral Quarter", "{city} Citadel"],
+  landmark: [
+    "{city} Old Town",
+    "The Royal Palace of {city}",
+    "{city} Cathedral Quarter",
+    "{city} Citadel",
+  ],
   museum: ["{city} Museum of Fine Arts", "The {city} City Museum", "Gallery of Modern {city}"],
   nature: ["{city} Riverside Gardens", "{city} Botanical Park", "The Green Ridge, {city}"],
   viewpoint: ["{city} Panorama Terrace", "Sunset Point above {city}", "The Belltower View, {city}"],
@@ -183,12 +190,36 @@ const HISTORIC_NOTE: Record<ExperienceCategory, string[]> = {
     "Holds three works considered nationally significant",
     "Purpose-built exhibition halls from the 1930s",
   ],
-  nature: ["Protected landscape since 1964", "Designed as a public park in the 1800s", "Regional nature reserve"],
-  viewpoint: ["Historic fortification wall", "Marked on maps since the 1600s", "Built as a signalling tower"],
-  market: ["Trading on this site since the middle ages", "Iron-and-glass hall from 1897", "Guild market, still family run"],
-  coast: ["Working harbour for over 500 years", "Blue Flag water quality", "Old fishing quarter, now protected"],
-  nightlife: ["Vaulted cellars from the wine trade era", "Historic theatre district", "Former industrial quarter, now cultural"],
-  food: ["Recipes protected by regional designation", "One of the oldest food halls in the country", "Traditional method, unchanged"],
+  nature: [
+    "Protected landscape since 1964",
+    "Designed as a public park in the 1800s",
+    "Regional nature reserve",
+  ],
+  viewpoint: [
+    "Historic fortification wall",
+    "Marked on maps since the 1600s",
+    "Built as a signalling tower",
+  ],
+  market: [
+    "Trading on this site since the middle ages",
+    "Iron-and-glass hall from 1897",
+    "Guild market, still family run",
+  ],
+  coast: [
+    "Working harbour for over 500 years",
+    "Blue Flag water quality",
+    "Old fishing quarter, now protected",
+  ],
+  nightlife: [
+    "Vaulted cellars from the wine trade era",
+    "Historic theatre district",
+    "Former industrial quarter, now cultural",
+  ],
+  food: [
+    "Recipes protected by regional designation",
+    "One of the oldest food halls in the country",
+    "Traditional method, unchanged",
+  ],
 };
 
 export const CATEGORY_ACTIVITY: Record<ExperienceCategory, Activity[]> = {
@@ -446,7 +477,7 @@ const TRIP_REASONS = [
 /** "Nearby places worth visiting" for one stop. */
 export function getDayTrips(stop: Pick<TripStop, "id" | "name" | "dayTrips">): DayTrip[] {
   const city = CITY_BY_ID.get(stop.id);
-  const names = stop.dayTrips.length ? stop.dayTrips : city?.dayTrips ?? [];
+  const names = stop.dayTrips.length ? stop.dayTrips : (city?.dayTrips ?? []);
 
   return names.map((name, index) => {
     const seed = `${stop.id}-dt-${index}`;
@@ -521,7 +552,9 @@ const CO2_PER_KM: Record<RouteLeg["mode"], number> = {
 /** Presentation-only enrichment of an optimised leg. */
 export function describeLeg(leg: RouteLeg, travellers: number): LegDetail {
   const seed = `${leg.from}-${leg.to}-${leg.mode}`;
-  const approxKm = Math.round(leg.hours * (leg.mode === "flight" ? 620 : leg.mode === "train" ? 120 : 85));
+  const approxKm = Math.round(
+    leg.hours * (leg.mode === "flight" ? 620 : leg.mode === "train" ? 120 : 85),
+  );
   const stops = leg.mode === "flight" ? hash(`${seed}s`) % 2 : 0;
 
   return {
@@ -541,9 +574,9 @@ export function describeLeg(leg: RouteLeg, travellers: number): LegDetail {
       leg.mode === "flight"
         ? `${Math.max(1, Math.round((leg.hours - 2.5) * 10) / 10)}h in the air · ${leg.hours}h door to door`
         : `${leg.hours}h door to door`,
-    stopsLabel: leg.mode === "flight" ? (stops ? `${stops} stop` : "Direct") : "No changes modelled",
-    baggageLabel:
-      leg.mode === "flight" ? "Carry-on included (placeholder)" : "Luggage included",
+    stopsLabel:
+      leg.mode === "flight" ? (stops ? `${stops} stop` : "Direct") : "No changes modelled",
+    baggageLabel: leg.mode === "flight" ? "Carry-on included (placeholder)" : "Luggage included",
     co2Kg: Math.round(approxKm * CO2_PER_KM[leg.mode] * Math.max(1, travellers)),
     price: leg.cost,
     quality: MOCK_QUALITY("Astera transport model"),

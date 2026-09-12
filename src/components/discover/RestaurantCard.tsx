@@ -3,11 +3,7 @@ import { Footprints, Sparkles, Star, UtensilsCrossed } from "lucide-react";
 import { ExperienceImage } from "@/components/common/ExperienceImage";
 import { FavouriteButton } from "@/components/discover/FavouriteButton";
 
-import {
-  DIET_LABEL,
-  priceLevelLabel,
-  type Restaurant,
-} from "@/services/experienceService";
+import { DIET_LABEL, priceLevelLabel, type Restaurant } from "@/services/experienceService";
 import type { TripPreferences } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +26,6 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
         ratioClassName="h-28 w-28 shrink-0 rounded-2xl sm:h-32 sm:w-32"
       />
 
-
       <div className="min-w-0 flex-1 space-y-2 py-1 pr-1">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -43,10 +38,12 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
               <span aria-label={`Price level ${restaurant.priceLevel} of 4`}>
                 {priceLevelLabel(restaurant.priceLevel)}
               </span>
-              <span className="inline-flex items-center gap-1">
-                <Star className="h-3.5 w-3.5 fill-current text-sunset" aria-hidden />
-                {restaurant.rating.toFixed(1)}
-              </span>
+              {restaurant.rating > 0 && (
+                <span className="inline-flex items-center gap-1">
+                  <Star className="h-3.5 w-3.5 fill-current text-sunset" aria-hidden />
+                  {restaurant.rating.toFixed(1)}
+                </span>
+              )}
               <span className="inline-flex items-center gap-1">
                 <Footprints className="h-3.5 w-3.5" aria-hidden />
                 {restaurant.walkMinutes} min from {restaurant.area}
@@ -70,6 +67,15 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
           <span className="text-muted-foreground">Order: </span>
           {restaurant.signatureDish}
         </p>
+        {restaurant.photoAttributions?.length ? (
+          <p className="text-[10px] text-muted-foreground">
+            Photo:{" "}
+            {restaurant.photoAttributions
+              .map((credit) => credit.displayName)
+              .filter(Boolean)
+              .join(", ") || "Google Places contributor"}
+          </p>
+        ) : null}
 
         <div className="flex flex-wrap gap-1.5">
           {restaurant.diets.map((diet) => {
@@ -97,7 +103,6 @@ export function RestaurantCard({ restaurant, preferences }: RestaurantCardProps)
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{restaurant.why}</p>
         </div>
-
       </div>
     </article>
   );

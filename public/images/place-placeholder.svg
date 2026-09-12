@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title description">
+  <title id="title">ASTERA place image unavailable</title>
+  <description id="description">A neutral illustrated placeholder for a place without a provider photograph.</description>
+  <rect width="1200" height="800" fill="#e9e5dc"/>
+  <circle cx="600" cy="350" r="96" fill="#0b5967" opacity=".12"/>
+  <path d="M600 246c-58 0-105 47-105 105 0 80 105 196 105 196s105-116 105-196c0-58-47-105-105-105Zm0 151a46 46 0 1 1 0-92 46 46 0 0 1 0 92Z" fill="#0b5967"/>
+  <text x="600" y="645" text-anchor="middle" font-family="system-ui,sans-serif" font-size="30" letter-spacing="8" fill="#092332">ASTERA</text>
+</svg>

@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/api/config";
+import { API_CONFIG } from "../api/config.ts";
 import type { GeoPoint } from "@/lib/types";
 
 /** Map helpers. MapLibre GL + OpenStreetMap raster tiles, no API key needed. */

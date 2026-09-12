@@ -6,6 +6,7 @@ import type { DataQuality, GeoPoint } from "@/lib/types";
 export interface GeocodeResult extends GeoPoint {
   name: string;
   country: string;
+  countryCode?: string;
   quality: DataQuality;
 }
 
@@ -13,17 +14,22 @@ interface NominatimItem {
   lat: string;
   lon: string;
   display_name: string;
-  address?: { country?: string };
+  address?: { country?: string; country_code?: string };
 }
 
 const cache = new Map<string, GeocodeResult>();
+const LOCAL_COUNTRIES: Record<string, { country: string; countryCode: string }> = {
+  karachi: { country: "Pakistan", countryCode: "PK" },
+};
 
 function localGuess(query: string): GeocodeResult {
   const key = query.trim().toLowerCase();
   const known = ORIGIN_COORDS[key];
+  const country = LOCAL_COUNTRIES[key];
   return {
     name: query.trim() || "Unknown",
-    country: "",
+    country: country?.country ?? "",
+    countryCode: country?.countryCode,
     lat: known?.lat ?? 48.5,
     lon: known?.lon ?? 9.5,
     quality: ESTIMATE_QUALITY("Offline gazetteer"),
@@ -36,6 +42,11 @@ export async function geocodeCity(query: string): Promise<GeocodeResult> {
   if (!key) return localGuess(query);
   const cached = cache.get(key);
   if (cached) return cached;
+  if (ORIGIN_COORDS[key]) {
+    const local = localGuess(query);
+    cache.set(key, local);
+    return local;
+  }
 
   const result = await withFallback(
     async () => {
@@ -48,6 +59,7 @@ export async function geocodeCity(query: string): Promise<GeocodeResult> {
       return {
         name: first.display_name.split(",")[0],
         country: first.address?.country ?? "",
+        countryCode: first.address?.country_code?.toUpperCase(),
         lat: Number(first.lat),
         lon: Number(first.lon),
         quality: LIVE_QUALITY(API_CONFIG.geocode.provider),

@@ -8,6 +8,8 @@ import {
   ExternalLink,
   Loader2,
   Plane,
+  Train,
+  Car,
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,7 +20,6 @@ import type { NormalisedFlightOffer } from "@/lib/flights/types";
 import { formatCurrency } from "@/lib/format";
 import { persistRoute } from "@/lib/storage";
 import type { BookingFlightSelection, TripRoute } from "@/lib/types";
-import { optimiseFurther } from "@/services/tripOptimizer";
 import { cn } from "@/lib/utils";
 
 interface BookingStageProps {
@@ -26,24 +27,26 @@ interface BookingStageProps {
   onRouteChange: (route: TripRoute) => void;
 }
 
-const STEPS = ["Choose flight", "Confirm hotels", "Finalize"] as const;
-
 export function BookingStage({ route, onRouteChange }: BookingStageProps) {
   const [step, setStep] = useState(1);
   const [offers, setOffers] = useState<NormalisedFlightOffer[]>([]);
   const [loadingFlights, setLoadingFlights] = useState(false);
   const [flightMessage, setFlightMessage] = useState("");
-  const [makingCheaper, setMakingCheaper] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
-  const query = buildFlightQuery({
+  const usesFlights = route.legs.some((leg) => leg.mode === "flight") && !route.preferences.avoidFlights;
+  const groundMode = route.legs.find((leg) => leg.mode !== "flight")?.mode ?? (route.preferences.transport === "car" ? "car" : "train");
+  const transportLabel = usesFlights ? "flight" : groundMode === "car" ? "drive" : "train";
+  const steps = [`Choose ${transportLabel}`, "Confirm hotels", "Finalize"] as const;
+  const query = usesFlights ? buildFlightQuery({
     startCity: route.preferences.startCity,
     destinations: route.stops.map((stop) => stop.name),
     startDate: route.preferences.startDate,
     endDate: route.preferences.endDate,
     travellers: route.preferences.travellers,
-  });
+  }) : null;
   const queryKey = query
     ? [
         route.id,
@@ -69,7 +72,7 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
     return {
       id: `estimate-${route.id}`,
       source: "estimate",
-      airlineName: "ASTERA flight estimate",
+      airlineName: usesFlights ? "ASTERA flight estimate" : groundMode === "car" ? "Estimated driving route" : "Estimated rail journey",
       originCode: query?.origin ?? first?.from ?? route.preferences.startCity,
       destinationCode:
         query?.destinations[0] ?? last?.to ?? route.stops[route.stops.length - 1]?.name ?? "Trip",
@@ -80,13 +83,15 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
         ),
       ),
       stops: Math.max(0, flightLegs.length - 1),
-      baggageSummary: "Confirm baggage with the airline",
+      baggageSummary: usesFlights
+        ? "Confirm baggage with the airline"
+        : "Estimated ground-transport option — no live booking provider is connected yet",
       totalAmount: estimatedFlightTotal,
       currency: route.preferences.currency,
     };
-  }, [estimatedFlightTotal, query, route]);
+  }, [estimatedFlightTotal, groundMode, query, route, usesFlights]);
 
-  const selectedFlight = route.bookingSelection?.flight ?? estimatedChoice;
+  const selectedFlight = usesFlights ? route.bookingSelection?.flight ?? estimatedChoice : estimatedChoice;
 
   const hotelTotal = useMemo(
     () =>
@@ -111,6 +116,14 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
   const directHotelLinks = route.stops.filter((stop) => Boolean(stop.hotel.websiteUrl));
 
   useEffect(() => {
+    if (!usesFlights) {
+      setOffers([]);
+      setLoadingFlights(false);
+      setFlightMessage(
+        `${groundMode === "car" ? "Driving" : "Rail"} details are estimated because no live ground-transport booking provider is connected. No flight search was made.`,
+      );
+      return;
+    }
     if (!queryKey || !query) {
       setFlightMessage("Airport codes are unavailable, so the planned flight estimate is shown.");
       return;
@@ -137,7 +150,7 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
     return () => controller.abort();
     // The stable key contains every query field.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryKey]);
+  }, [queryKey, groundMode, usesFlights]);
 
   const persistSelection = (flight: BookingFlightSelection) => {
     const next: TripRoute = {
@@ -169,6 +182,7 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
   };
 
   const continueToBooking = () => {
+    setBookingOpen(true);
     setStep(3);
     sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (step === 3) {
@@ -178,21 +192,9 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
     }
   };
 
-  const makeCheaper = async () => {
-    setMakingCheaper(true);
-    try {
-      const improved = await optimiseFurther(route, "spend-less");
-      const next = { ...improved, id: route.id, bookingSelection: undefined };
-      persistRoute(next);
-      onRouteChange(next);
-      setOffers([]);
-      setStep(1);
-      toast.success("Trip recalculated with a lower-spend goal.");
-    } catch {
-      toast.error("Could not recalculate this trip.");
-    } finally {
-      setMakingCheaper(false);
-    }
+  const makeCheaper = () => {
+    document.getElementById("stretch-budget")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    toast.info("Choose a cost-saving trade-off, then apply it to update the complete trip.");
   };
 
   const downloadItinerary = () => {
@@ -225,269 +227,310 @@ export function BookingStage({ route, onRouteChange }: BookingStageProps) {
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: reduceMotion ? 0 : 0.85, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-16 scroll-mt-28 overflow-hidden rounded-[2.5rem] bg-ink px-5 py-10 text-white shadow-lift sm:px-8 md:py-14 lg:px-10"
+        className="mt-7 scroll-mt-28 overflow-hidden rounded-[1.75rem] bg-ink px-5 py-8 text-white shadow-lift sm:px-7 lg:px-8"
         aria-labelledby="ready-to-book"
       >
-        <div className="mb-10 grid gap-8 border-b border-white/15 pb-9 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+        <div className="grid gap-7 lg:grid-cols-[1.35fr_.65fr] lg:items-stretch">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold tracking-[0.18em] text-teal uppercase">
+            <p className="text-[10px] font-semibold tracking-[0.18em] text-teal uppercase">
               One final step
             </p>
             <h2
               id="ready-to-book"
-              className="mt-3 font-display text-[clamp(2.5rem,5vw,4.25rem)] leading-none font-medium tracking-[-0.03em]"
+              className="mt-2 font-display text-[clamp(2rem,3vw,3rem)] leading-none font-medium tracking-[-0.03em]"
             >
               Ready to make it real?
             </h2>
-            <p className="mt-4 max-w-xl leading-relaxed text-white/65">
+            <p className="mt-3 max-w-xl text-xs leading-relaxed text-white/65">
               Your route is decided. Confirm the bookings that bring it together—ASTERA never
               handles payment.
             </p>
+            <ul className="mt-5 flex flex-wrap gap-x-7 gap-y-2 text-[11px] text-white/75">
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-teal" /> Best available options
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-teal" /> Provider checkout
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 text-teal" /> No ASTERA payment claim
+              </li>
+            </ul>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button variant="hero" onClick={() => setBookingOpen((current) => !current)}>
+                {bookingOpen ? "Hide booking choices" : `Review ${transportLabel} & hotels`}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-white/25 bg-transparent text-white hover:bg-white hover:text-ink"
+                onClick={makeCheaper}
+              >
+                <Sparkles aria-hidden /> Make this trip cheaper
+              </Button>
+            </div>
           </div>
-          <div className="md:text-right">
-            <p className="text-xs tracking-[0.14em] text-white/55 uppercase">
-              Estimated trip total
+          <aside className="rounded-[1.25rem] border border-white/10 bg-white/[.07] p-5 backdrop-blur-sm">
+            <p className="text-[9px] font-semibold tracking-[.16em] text-teal uppercase">
+              Trip summary
             </p>
-            <p className="mt-2 font-display text-4xl font-semibold tracking-[-0.025em]">
-              {formatCurrency(fullTripTotal, route.preferences.currency)}
+            <h3 className="mt-2 font-display text-xl">{route.title}</h3>
+            <p className="mt-1 text-[11px] text-white/55">
+              {route.itinerary.length} days · {route.stops.length}{" "}
+              {route.stops.length === 1 ? "city" : "cities"} · {route.preferences.travellers}{" "}
+              travellers
             </p>
-            <p className={cn("mt-1 text-sm", budgetRemaining >= 0 ? "text-teal" : "text-sunset")}>
-              {formatCurrency(Math.abs(budgetRemaining), route.preferences.currency)}{" "}
-              {budgetRemaining >= 0 ? "remaining" : "over budget"}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="rounded-4xl bg-background p-5 text-foreground sm:p-7">
-            <ol className="mb-8 grid grid-cols-3 gap-2" aria-label="Booking steps">
-              {STEPS.map((label, index) => {
-                const number = index + 1;
-                return (
-                  <li key={label}>
-                    <button
-                      type="button"
-                      onClick={() => setStep(number)}
-                      className={cn(
-                        "w-full border-b-2 px-2 py-3 text-left text-sm transition-colors",
-                        step === number
-                          ? "border-primary font-semibold text-foreground"
-                          : "border-border text-muted-foreground hover:border-primary/40",
-                      )}
-                    >
-                      <span className="block text-xs">Step {number}</span>
-                      {label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
-
-            {step === 1 && (
-              <div>
-                <h3 className="font-display text-2xl font-medium">Choose your flight</h3>
-                {loadingFlights && (
-                  <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                    Checking current prices…
-                  </p>
-                )}
-                {!loadingFlights && offers.length === 0 && (
-                  <FlightChoice
-                    flight={estimatedChoice}
-                    selected={selectedFlight.id === estimatedChoice.id}
-                    bestValue
-                    onSelect={() => persistSelection(estimatedChoice)}
-                  />
-                )}
-                {flightMessage && (
-                  <p className="mt-4 text-sm text-muted-foreground">{flightMessage}</p>
-                )}
-                {route.bookingSelection?.flight &&
-                  route.bookingSelection.flight.id !== estimatedChoice.id &&
-                  !offers.some((offer) => offer.offerId === route.bookingSelection?.flight?.id) && (
-                    <FlightChoice
-                      flight={route.bookingSelection.flight}
-                      selected
-                      onSelect={() => persistSelection(route.bookingSelection!.flight!)}
-                    />
-                  )}
-                {offers.map((offer, index) => (
-                  <FlightChoice
-                    key={offer.offerId}
-                    flight={{
-                      id: offer.offerId,
-                      source: offer.status === "live" ? "live" : "estimate",
-                      airlineName: offer.airlineName,
-                      originCode: offer.originCode,
-                      destinationCode: offer.destinationCode,
-                      departureAt: offer.outboundDepartAt,
-                      arrivalAt: offer.outboundArriveAt,
-                      durationMinutes: offer.durationMinutes,
-                      stops: offer.stops,
-                      baggageSummary: offer.baggageSummary,
-                      totalAmount: offer.totalAmount,
-                      currency: offer.currency,
-                    }}
-                    selected={selectedFlight.id === offer.offerId}
-                    bestValue={index === 0}
-                    onSelect={() => selectOffer(offer)}
-                  />
-                ))}
-                <Button className="mt-7" onClick={() => setStep(2)}>
-                  Confirm flight
-                </Button>
-              </div>
-            )}
-
-            {step === 2 && (
-              <div>
-                <h3 className="font-display text-2xl font-medium">Confirm your stays</h3>
-                <div className="mt-6 space-y-6">
-                  {route.stops.map((stop) => {
-                    const total =
-                      stop.hotel.totalStayPrice ??
-                      stop.hotel.nightlyFrom *
-                        stop.nights *
-                        Math.max(1, Math.ceil(route.preferences.travellers / 2));
-                    return (
-                      <article
-                        key={stop.id}
-                        className="grid overflow-hidden rounded-3xl bg-card shadow-soft sm:grid-cols-[180px_1fr]"
-                      >
-                        <img
-                          src={stop.hotel.imageUrl ?? route.image}
-                          alt={`${stop.hotel.name} in ${stop.name}`}
-                          className="h-44 w-full object-cover sm:h-full"
-                        />
-                        <div className="p-5">
-                          <p className="text-sm text-muted-foreground">
-                            {stop.name} · {stop.nights} nights
-                          </p>
-                          <h4 className="mt-1 font-display text-xl font-medium">
-                            {stop.hotel.name}
-                          </h4>
-                          <p className="mt-1 text-sm">
-                            {stop.hotel.rating}★ ·{" "}
-                            {formatCurrency(stop.hotel.nightlyFrom, route.preferences.currency)} /
-                            night
-                          </p>
-                          <p className="mt-2 font-semibold">
-                            {formatCurrency(total, route.preferences.currency)} total
-                          </p>
-                          <details className="mt-4 text-sm text-muted-foreground">
-                            <summary className="cursor-pointer font-medium">Room details</summary>
-                            <p className="mt-2">
-                              {stop.hotel.roomType ?? stop.hotel.style} ·{" "}
-                              {stop.hotel.boardType ?? "Board not specified"} ·{" "}
-                              {stop.hotel.quality.source === "live"
-                                ? "Live availability"
-                                : "Sample availability"}
-                            </p>
-                          </details>
-                          <a
-                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`hotels near ${stop.hotel.area}`)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal hover:underline"
-                          >
-                            Change hotel · View alternatives
-                            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                          </a>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
-                <Button className="mt-7" onClick={() => setStep(3)}>
-                  Confirm hotels
-                </Button>
-              </div>
-            )}
-
-            {step === 3 && (
-              <div>
-                <h3 className="font-display text-2xl font-medium">Finalize your trip</h3>
-                <BookingTotals
-                  route={route}
-                  flight={selectedFlight}
-                  hotelTotal={hotelTotal}
-                  fullTripTotal={fullTripTotal}
-                  budgetRemaining={budgetRemaining}
-                />
-
-                <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                  <BookingAction
-                    icon={<Plane aria-hidden />}
-                    title="Book flight"
-                    href={selectedFlight.bookingUrl}
-                    unavailable="This fare has no direct checkout link. Book it with the airline or your preferred flight site using the details above."
-                  />
-                  {route.stops.map((stop) => (
-                    <BookingAction
-                      key={stop.id}
-                      icon={<BedDouble aria-hidden />}
-                      title={`Book ${stop.hotel.name}`}
-                      href={stop.hotel.websiteUrl}
-                      unavailable="The hotel provider did not supply a direct booking URL. Use View alternatives to continue."
-                    />
-                  ))}
-                </div>
-
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button size="lg" variant="hero" onClick={continueToBooking}>
-                    Continue to booking
-                    <ExternalLink aria-hidden />
-                  </Button>
-                  <Button variant="outline" onClick={makeCheaper} disabled={makingCheaper}>
-                    {makingCheaper ? (
-                      <Loader2 className="animate-spin" aria-hidden />
-                    ) : (
-                      <Sparkles aria-hidden />
-                    )}
-                    Make this trip cheaper
-                  </Button>
-                  <Button variant="ghost" onClick={downloadItinerary}>
-                    <Download aria-hidden />
-                    Download itinerary
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <aside className="h-fit rounded-4xl bg-sand p-6 text-foreground shadow-soft lg:sticky lg:top-28">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-teal uppercase">
-              Your final checklist
-            </p>
-            <h3 className="mt-2 font-display text-2xl font-medium">Everything in one place</h3>
-            <BookingTotals
-              route={route}
-              flight={selectedFlight}
-              hotelTotal={hotelTotal}
-              fullTripTotal={fullTripTotal}
-              budgetRemaining={budgetRemaining}
-              compact
-            />
-            <BookingChecklist />
-            <Button variant="hero" size="lg" className="mt-7 w-full" onClick={continueToBooking}>
+            <div className="mt-5 border-t border-white/12 pt-4">
+              <p className="text-[9px] tracking-[.14em] text-white/45 uppercase">From</p>
+              <p className="mt-1 font-display text-4xl">
+                {formatCurrency(fullTripTotal, route.preferences.currency)}
+              </p>
+              <p className={cn("mt-1 text-xs", budgetRemaining >= 0 ? "text-teal" : "text-sunset")}>
+                {formatCurrency(Math.abs(budgetRemaining), route.preferences.currency)}{" "}
+                {budgetRemaining >= 0 ? "remaining" : "over budget"}
+              </p>
+            </div>
+            <Button variant="hero" className="mt-5 w-full" onClick={continueToBooking}>
               Continue to booking
-            </Button>
-            <Button
-              variant="ghost"
-              className="mt-2 w-full"
-              onClick={makeCheaper}
-              disabled={makingCheaper}
-            >
-              {makingCheaper ? (
-                <Loader2 className="animate-spin" aria-hidden />
-              ) : (
-                <Sparkles aria-hidden />
-              )}
-              Make this trip cheaper
             </Button>
           </aside>
         </div>
+
+        {bookingOpen && (
+          <div className="mt-8 grid gap-6 border-t border-white/15 pt-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="rounded-4xl bg-background p-5 text-foreground sm:p-7">
+              <ol className="mb-8 grid grid-cols-3 gap-2" aria-label="Booking steps">
+                {steps.map((label, index) => {
+                  const number = index + 1;
+                  return (
+                    <li key={label}>
+                      <button
+                        type="button"
+                        onClick={() => setStep(number)}
+                        className={cn(
+                          "w-full border-b-2 px-2 py-3 text-left text-sm transition-colors",
+                          step === number
+                            ? "border-primary font-semibold text-foreground"
+                            : "border-border text-muted-foreground hover:border-primary/40",
+                        )}
+                      >
+                        <span className="block text-xs">Step {number}</span>
+                        {label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+
+              {step === 1 && (
+                <div>
+                  <h3 className="font-display text-2xl font-medium">Choose your {transportLabel}</h3>
+                  {loadingFlights && (
+                    <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                      Checking current prices…
+                    </p>
+                  )}
+                  {!loadingFlights && offers.length === 0 && (
+                    <FlightChoice
+                      flight={estimatedChoice}
+                      selected={selectedFlight.id === estimatedChoice.id}
+                      bestValue
+                      onSelect={() => persistSelection(estimatedChoice)}
+                    />
+                  )}
+                  {flightMessage && (
+                    <p className="mt-4 text-sm text-muted-foreground">{flightMessage}</p>
+                  )}
+                  {route.bookingSelection?.flight &&
+                    route.bookingSelection.flight.id !== estimatedChoice.id &&
+                    !offers.some(
+                      (offer) => offer.offerId === route.bookingSelection?.flight?.id,
+                    ) && (
+                      <FlightChoice
+                        flight={route.bookingSelection.flight}
+                        selected
+                        onSelect={() => persistSelection(route.bookingSelection!.flight!)}
+                      />
+                    )}
+                  {offers.map((offer, index) => (
+                    <FlightChoice
+                      key={offer.offerId}
+                      flight={{
+                        id: offer.offerId,
+                        source: offer.status === "live" ? "live" : "estimate",
+                        airlineName: offer.airlineName,
+                        originCode: offer.originCode,
+                        destinationCode: offer.destinationCode,
+                        departureAt: offer.outboundDepartAt,
+                        arrivalAt: offer.outboundArriveAt,
+                        durationMinutes: offer.durationMinutes,
+                        stops: offer.stops,
+                        baggageSummary: offer.baggageSummary,
+                        totalAmount: offer.totalAmount,
+                        currency: offer.currency,
+                      }}
+                      selected={selectedFlight.id === offer.offerId}
+                      bestValue={index === 0}
+                      onSelect={() => selectOffer(offer)}
+                    />
+                  ))}
+                  <Button className="mt-7" onClick={() => setStep(2)}>
+                    Confirm {transportLabel}
+                  </Button>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div>
+                  <h3 className="font-display text-2xl font-medium">Confirm your stays</h3>
+                  <div className="mt-6 space-y-6">
+                    {route.stops.map((stop) => {
+                      const total =
+                        stop.hotel.totalStayPrice ??
+                        stop.hotel.nightlyFrom *
+                          stop.nights *
+                          Math.max(1, Math.ceil(route.preferences.travellers / 2));
+                      return (
+                        <article
+                          key={stop.id}
+                          className={`grid overflow-hidden rounded-3xl bg-card shadow-soft ${stop.hotel.imageUrl && stop.hotel.hotelProvenance?.source !== "demo-fixture" ? "sm:grid-cols-[180px_1fr]" : "grid-cols-1"}`}
+                        >
+                          {stop.hotel.hotelProvenance?.source !== "demo-fixture" &&
+                            stop.hotel.imageUrl && (
+                              <img
+                                src={stop.hotel.imageUrl}
+                                alt={`${stop.hotel.name} in ${stop.name}`}
+                                className="h-44 w-full object-cover sm:h-full"
+                              />
+                            )}
+                          <div className="p-5">
+                            <p className="text-sm text-muted-foreground">
+                              {stop.name} · {stop.nights} nights
+                            </p>
+                            <h4 className="mt-1 font-display text-xl font-medium">
+                              {stop.hotel.name}
+                            </h4>
+                            <p className="mt-1 text-sm">
+                              {stop.hotel.rating}★ ·{" "}
+                              {formatCurrency(stop.hotel.nightlyFrom, route.preferences.currency)} /
+                              night
+                            </p>
+                            <p className="mt-2 font-semibold">
+                              {formatCurrency(total, route.preferences.currency)} total
+                            </p>
+                            <details className="mt-4 text-sm text-muted-foreground">
+                              <summary className="cursor-pointer font-medium">Room details</summary>
+                              <p className="mt-2">
+                                {stop.hotel.roomType ?? stop.hotel.style} ·{" "}
+                                {stop.hotel.boardType ?? "Board not specified"} ·{" "}
+                                {stop.hotel.hotelProvenance?.source === "hotelbeds-live"
+                                  ? "Live availability"
+                                  : stop.hotel.hotelProvenance?.source === "hotelbeds-cache"
+                                    ? "Cached availability — may be outdated"
+                                    : "Demo inventory — not bookable"}
+                              </p>
+                            </details>
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`hotels near ${stop.hotel.area}`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal hover:underline"
+                            >
+                              Change hotel · View alternatives
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                            </a>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                  <Button className="mt-7" onClick={() => setStep(3)}>
+                    Confirm hotels
+                  </Button>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div>
+                  <h3 className="font-display text-2xl font-medium">Finalize your trip</h3>
+                  <BookingTotals
+                    route={route}
+                    flight={selectedFlight}
+                    hotelTotal={hotelTotal}
+                    fullTripTotal={fullTripTotal}
+                    budgetRemaining={budgetRemaining}
+                  />
+
+                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                    <BookingAction
+                      icon={usesFlights ? <Plane aria-hidden /> : groundMode === "car" ? <Car aria-hidden /> : <Train aria-hidden />}
+                      title={`Book ${transportLabel}`}
+                      href={usesFlights ? selectedFlight.bookingUrl : undefined}
+                      unavailable={usesFlights
+                        ? "This fare has no direct checkout link. Book it with the airline or your preferred flight site using the details above."
+                        : `This is an estimated ${transportLabel} option. ASTERA does not yet have a live ground-transport booking link.`}
+                    />
+                    {route.stops.map((stop) => (
+                      <BookingAction
+                        key={stop.id}
+                        icon={<BedDouble aria-hidden />}
+                        title={
+                          stop.hotel.hotelProvenance?.source === "demo-fixture"
+                            ? "Demo hotel — not bookable"
+                            : `Book ${stop.hotel.name}`
+                        }
+                        href={stop.hotel.websiteUrl}
+                        unavailable="The hotel provider did not supply a direct booking URL. Use View alternatives to continue."
+                      />
+                    ))}
+                  </div>
+
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <Button size="lg" variant="hero" onClick={continueToBooking}>
+                      Continue to booking
+                      <ExternalLink aria-hidden />
+                    </Button>
+                    <Button variant="outline" onClick={makeCheaper}>
+                      <Sparkles aria-hidden />
+                      Make this trip cheaper
+                    </Button>
+                    <Button variant="ghost" onClick={downloadItinerary}>
+                      <Download aria-hidden />
+                      Download itinerary
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <aside className="h-fit rounded-4xl bg-sand p-6 text-foreground shadow-soft lg:sticky lg:top-28">
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-teal uppercase">
+                Your final checklist
+              </p>
+              <h3 className="mt-2 font-display text-2xl font-medium">Everything in one place</h3>
+              <BookingTotals
+                route={route}
+                flight={selectedFlight}
+                hotelTotal={hotelTotal}
+                fullTripTotal={fullTripTotal}
+                budgetRemaining={budgetRemaining}
+                compact
+              />
+              <BookingChecklist />
+              <Button variant="hero" size="lg" className="mt-7 w-full" onClick={continueToBooking}>
+                Continue to booking
+              </Button>
+              <Button
+                variant="ghost"
+                className="mt-2 w-full"
+                onClick={makeCheaper}
+              >
+                <Sparkles aria-hidden />
+                Make this trip cheaper
+              </Button>
+            </aside>
+          </div>
+        )}
       </motion.section>
 
       <div className="fixed inset-x-4 bottom-20 z-40 md:hidden">
@@ -556,10 +599,9 @@ function FlightChoice({
         </div>
       </button>
       <details className="mt-4 text-xs text-muted-foreground">
-        <summary className="cursor-pointer font-medium">Baggage and fare details</summary>
+        <summary className="cursor-pointer font-medium">Journey and fare details</summary>
         <p className="mt-2">
-          {flight.baggageSummary ?? "Baggage was not specified."} Provider fare rules are confirmed
-          on the booking site.
+          {flight.baggageSummary ?? "Additional journey details were not specified."}
         </p>
       </details>
     </article>
@@ -582,6 +624,11 @@ function BookingTotals({
   compact?: boolean;
 }) {
   const currency = route.preferences.currency;
+  const transportLabel = route.legs.some((leg) => leg.mode === "flight") && !route.preferences.avoidFlights
+    ? "flight"
+    : route.legs.some((leg) => leg.mode === "car")
+      ? "drive"
+      : "train";
   return (
     <dl
       className={cn(
@@ -590,7 +637,7 @@ function BookingTotals({
       )}
     >
       <SummaryRow
-        label="Selected flight"
+        label={`Selected ${transportLabel}`}
         value={`${flight.airlineName} · ${flight.currency} ${flight.totalAmount}`}
       />
       <SummaryRow
@@ -631,7 +678,7 @@ function SummaryRow({
 }
 
 function BookingChecklist() {
-  const items = ["Flights chosen", "Hotels selected", "Budget checked", "Itinerary ready"];
+  const items = ["Transport chosen", "Hotels selected", "Budget checked", "Itinerary ready"];
   return (
     <ol className="mt-7 space-y-3" aria-label="Trip booking readiness">
       {items.map((label) => (

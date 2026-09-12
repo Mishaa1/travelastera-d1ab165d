@@ -25,7 +25,7 @@ const FAQS = [
   },
   {
     q: "Do I need an account?",
-    a: "No. Saved trips and your planner draft live in your browser's local storage. Nothing is uploaded and there's nothing to sign up for.",
+    a: "No. You can plan anonymously. Creating an account lets ASTERA remember your travel style and gives the product a secure identity for syncing trips as that capability rolls out.",
   },
   {
     q: "How does Optimise further work?",

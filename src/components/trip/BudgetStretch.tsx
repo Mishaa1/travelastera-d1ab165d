@@ -1,25 +1,30 @@
-import { ArrowDownRight, ArrowUpRight, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { AnimatedCounter } from "@/components/common/AnimatedCounter";
 import { formatCurrency } from "@/lib/format";
 import type { BudgetStretchOption, TripRoute } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { persistRoute } from "@/lib/storage";
+import { applyBudgetStretchOption } from "@/services/tripOptimizer";
+import { Button } from "@/components/ui/button";
 
 interface BudgetStretchProps {
   route: TripRoute;
+  onRouteChange: (route: TripRoute) => void;
   className?: string;
 }
 
 /**
  * "Stretch your budget".
  *
- * Every suggestion is already costed against this exact route, so toggling one
- * updates the total instantly — no second optimiser run, no spinner, no
- * network. What the traveller gives up is always stated next to the saving.
+ * Every suggestion has an instant estimate, but the route changes only after
+ * the existing optimiser has recalculated the affected trip data.
  */
-export function BudgetStretch({ route, className }: BudgetStretchProps) {
+export function BudgetStretch({ route, onRouteChange, className }: BudgetStretchProps) {
   const [applied, setApplied] = useState<string[]>([]);
+  const [applying, setApplying] = useState(false);
   const currency = route.preferences.currency;
   const options = route.stretchOptions ?? [];
 
@@ -37,12 +42,54 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
   const newLeft = route.preferences.budget - newCost;
   const overBudget = newLeft < 0;
 
+  const applySelection = async () => {
+    if (applied.length !== 1) return;
+    setApplying(true);
+    try {
+      const updated = await applyBudgetStretchOption(route, applied[0]);
+      const previousDays = route.itinerary.length;
+      const previousStops = route.stops.map((stop) => stop.name).join(" → ");
+      const previousHotels = route.stops.map((stop) => stop.hotel.name).join(" · ");
+      const previousModes = route.legs.map((leg) => leg.mode).join(" · ");
+      persistRoute(updated);
+      onRouteChange(updated);
+      setApplied([]);
+      const changes = [
+        updated.itinerary.length !== previousDays
+          ? `${previousDays} → ${updated.itinerary.length} days`
+          : null,
+        updated.stops.map((stop) => stop.name).join(" → ") !== previousStops
+          ? "route updated"
+          : null,
+        updated.stops.map((stop) => stop.hotel.name).join(" · ") !== previousHotels
+          ? "stays updated"
+          : null,
+        updated.legs.map((leg) => leg.mode).join(" · ") !== previousModes
+          ? "transport updated"
+          : null,
+        updated.cost !== route.cost
+          ? `${formatCurrency(route.cost, currency)} → ${formatCurrency(updated.cost, currency)}`
+          : null,
+      ].filter((item): item is string => Boolean(item));
+      toast.success(changes.length ? `Trip updated: ${changes.join(" · ")}.` : "Trip constraints updated.");
+      window.setTimeout(
+        () => document.getElementById("trip-itinerary")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        120,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not apply that adjustment.");
+    } finally {
+      setApplying(false);
+    }
+  };
+
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-[2rem] border border-border bg-card p-6 shadow-soft sm:p-8",
+        "relative mx-auto max-w-5xl overflow-hidden rounded-[1.5rem] border border-border bg-card p-5 shadow-soft sm:p-6",
         className,
       )}
+      id="stretch-budget"
       aria-label="Stretch your budget"
     >
       {/* Featured-insight backdrop — a whisper, not a shout. */}
@@ -61,12 +108,11 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
             <Sparkles className="h-3.5 w-3.5" aria-hidden />
             Featured insight
           </p>
-          <h3 className="mt-2 font-display text-2xl font-medium tracking-[-0.01em]">
+          <h3 className="mt-1.5 font-display text-xl font-medium tracking-[-0.01em] sm:text-2xl">
             Stretch your budget
           </h3>
-          <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Toggle any adjustment — the total re-prices instantly. Nothing is booked
-            until you say so.
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
+            Preview one adjustment, then apply it to recalculate the real route, stays and itinerary.
           </p>
         </div>
         {applied.length > 0 && (
@@ -81,7 +127,7 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
         )}
       </div>
 
-      <ul className="mt-6 space-y-2.5">
+      <ul className="mt-4 grid gap-2.5 lg:grid-cols-2">
         {options.map((option) => (
           <StretchRow
             key={option.id}
@@ -92,19 +138,19 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
               setApplied((current) =>
                 current.includes(option.id)
                   ? current.filter((id) => id !== option.id)
-                  : [...current, option.id],
+                  : [option.id],
               )
             }
           />
         ))}
       </ul>
 
-      <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 rounded-3xl border border-border bg-background/80 p-5 backdrop-blur-sm">
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 rounded-2xl border border-border bg-background/80 px-4 py-3.5 backdrop-blur-sm">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-            {applied.length ? "Adjusted trip cost" : "Trip cost as planned"}
+            {applied.length ? "Preview trip cost" : "Trip cost as planned"}
           </p>
-          <p className="mt-1.5 font-display text-3xl font-medium tabular-nums tracking-[-0.02em]">
+          <p className="mt-1 font-display text-2xl font-medium tabular-nums tracking-[-0.02em]">
             <AnimatedCounter
               value={newCost}
               duration={0.45}
@@ -125,10 +171,15 @@ export function BudgetStretch({ route, className }: BudgetStretchProps) {
       </div>
 
       {applied.length > 0 && (
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-          Estimates applied to this route only — your saved copy stays as it was
-          until you save again.
-        </p>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
+            This is a preview. Applying it reruns the existing optimiser and replaces these figures with recalculated provider-backed results.
+          </p>
+          <Button onClick={applySelection} disabled={applying}>
+            {applying ? <Loader2 className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
+            Apply and update trip
+          </Button>
+        </div>
       )}
     </section>
   );
@@ -156,7 +207,7 @@ function StretchRow({
         onClick={onToggle}
         aria-pressed={active}
         className={cn(
-          "flex w-full items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+          "flex h-full w-full items-start gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
           active
             ? "border-teal/50 bg-teal/8"
             : "border-border bg-card transition-colors duration-250 hover:border-aegean hover:bg-aegean hover:text-primary-foreground",
@@ -164,15 +215,15 @@ function StretchRow({
       >
         <span
           className={cn(
-            "mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full",
+          "mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full",
             saves ? "bg-emerald/12 text-emerald" : "bg-sunset/15 text-sunset-foreground",
           )}
         >
-          <Icon className="h-4 w-4" aria-hidden />
+          <Icon className="h-3.5 w-3.5" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <span className="text-sm font-semibold">{option.label}</span>
+            <span className="text-xs font-semibold sm:text-sm">{option.label}</span>
             <span
               className={cn(
                 "text-sm font-semibold tabular-nums",

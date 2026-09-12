@@ -5,6 +5,7 @@ interface WordmarkProps {
   /** Renders the small orbit/star mark before the wordmark. */
   withMark?: boolean;
   size?: "sm" | "md" | "lg";
+  signature?: boolean;
 }
 
 const SIZE: Record<NonNullable<WordmarkProps["size"]>, string> = {
@@ -14,11 +15,18 @@ const SIZE: Record<NonNullable<WordmarkProps["size"]>, string> = {
 };
 
 /** ASTERA — elegant high-contrast serif, generous tracking, always uppercase. */
-export function Wordmark({ className, withMark = false, size = "md" }: WordmarkProps) {
+export function Wordmark({ className, withMark = false, size = "md", signature = false }: WordmarkProps) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
       {withMark && <OrbitMark className="h-[1em] w-[1em] shrink-0" />}
-      <span className={cn("font-display font-semibold wordmark-track", SIZE[size])}>ASTERA</span>
+      <span className="inline-flex flex-col leading-none">
+        <span className={cn("font-display font-semibold wordmark-track", SIZE[size])}>ASTERA</span>
+        {signature && (
+          <span className="mt-1 text-center font-serif-display text-[8px] font-light italic tracking-[.16em] opacity-55">
+            by Mehrmah labs
+          </span>
+        )}
+      </span>
     </span>
   );
 }

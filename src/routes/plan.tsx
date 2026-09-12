@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Pencil, RotateCcw, Save, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, Pencil, RotateCcw, Save, Sparkles, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { PageShell } from "@/components/layout/PageShell";
@@ -24,6 +24,8 @@ import type {
 import { DIET_LABEL } from "@/services/experienceService";
 import { isDiscoveryTrip } from "@/services/tripOptimizer";
 import { cn } from "@/lib/utils";
+import { collaborationApi } from "@/services/collaborationService";
+import { toast } from "sonner";
 
 const TITLE = "Plan a trip — Astera trip optimiser";
 const DESCRIPTION =
@@ -126,6 +128,11 @@ function PlanPage() {
   const { preferences, update, reset } = useTripDraft();
   const [step, setStep] = useState(0);
   const reduceMotion = useReducedMotion();
+  const [groupOpen, setGroupOpen] = useState(false);
+  const [organizerName, setOrganizerName] = useState("");
+  const [travellerNames, setTravellerNames] = useState(["", ""]);
+  const [groupToken, setGroupToken] = useState("");
+  const [creatingGroup, setCreatingGroup] = useState(false);
 
   const nights = nightsBetween(preferences.startDate, preferences.endDate);
   const perDay = Math.round(preferences.budget / Math.max(1, nights * preferences.travellers));
@@ -201,6 +208,16 @@ function PlanPage() {
             <Save className="h-3.5 w-3.5" aria-hidden /> Progress saves automatically in this browser
           </span>
         </div>
+
+        <section className="mt-6 overflow-hidden rounded-3xl border border-border bg-card/75 shadow-soft">
+          <button type="button" onClick={() => setGroupOpen((value) => !value)} className="flex w-full items-center justify-between gap-4 p-5 text-left">
+            <span className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-teal/10 text-teal"><Users className="h-5 w-5" aria-hidden /></span><span><strong className="block font-display text-lg">Planning with others?</strong><span className="text-sm text-muted-foreground">Invite everyone to add their own preferences before ASTERA optimises.</span></span></span>
+            <span className="text-sm font-semibold text-teal">{groupOpen ? "Close" : "Set up"}</span>
+          </button>
+          {groupOpen && <div className="border-t border-border px-5 py-5">
+            {groupToken ? <div className="rounded-2xl bg-secondary/55 p-4"><p className="text-sm font-semibold">Your invite is ready</p><p className="mt-1 text-xs text-muted-foreground">Responses are stored with this shared trip and survive reloads.</p><div className="mt-3 flex gap-2"><Input readOnly value={typeof window === "undefined" ? `/collaborate/${groupToken}` : `${window.location.origin}/collaborate/${groupToken}`} /><Button type="button" variant="outline" onClick={async()=>{await navigator.clipboard.writeText(`${window.location.origin}/collaborate/${groupToken}`);toast.success("Invite link copied");}}><Copy aria-hidden/>Copy</Button></div></div> : <div className="grid gap-4 md:grid-cols-[0.8fr_1.2fr_auto] md:items-end"><Field label="Organiser name" id="organizer-name"><Input id="organizer-name" value={organizerName} onChange={(e)=>setOrganizerName(e.target.value)} placeholder="Your name" /></Field><Field label="Traveller names" id="traveller-names"><Input id="traveller-names" value={travellerNames.join(", ")} onChange={(e)=>setTravellerNames(e.target.value.split(","))} placeholder="Alex, Sam, Jamie" /></Field><Button type="button" variant="hero" disabled={creatingGroup || !organizerName.trim() || !travellerNames.some(n=>n.trim())} onClick={async()=>{setCreatingGroup(true);try{const result=await collaborationApi.create(organizerName,travellerNames.map(n=>n.trim()).filter(Boolean),preferences);setGroupToken(result.token);toast.success("Shared trip created");}catch(error){toast.error(error instanceof Error?error.message:"Could not create invite");}finally{setCreatingGroup(false);}}}>{creatingGroup?"Creating…":"Create invite"}</Button></div>}
+          </div>}
+        </section>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
           <div className="min-w-0">
@@ -529,6 +546,48 @@ function PlanPage() {
                       />
                     </div>
 
+                    <fieldset className="rounded-3xl border border-teal/20 bg-teal/[0.045] p-5">
+                      <legend className="px-2 text-xs font-semibold tracking-wide uppercase">
+                        Explore nearby possibilities
+                      </legend>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Optional. ASTERA verifies nearby places, then lets the AI compare regional routes without replacing your requested destination.
+                      </p>
+                      <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                        {([
+                          ["off", "Off"],
+                          ["day-trips", "Day trips"],
+                          ["nearby-cities", "Nearby cities"],
+                          ["surprise", "Surprise me"],
+                        ] as const).map(([value, label]) => (
+                          <Chip key={value} label={label} active={(preferences.regionalDiscovery ?? "nearby-cities") === value} onClick={() => update("regionalDiscovery", value)} />
+                        ))}
+                      </div>
+                      {(preferences.regionalDiscovery ?? "nearby-cities") !== "off" && (
+                        <div className="mt-5 grid gap-5 lg:grid-cols-3">
+                          <fieldset>
+                            <legend className="text-xs font-semibold text-muted-foreground">Maximum extra travel</legend>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {([60, 120, 240] as const).map((minutes) => <Chip key={minutes} label={minutes < 120 ? "1 hour" : `${minutes / 60} hours`} active={(preferences.maxAdditionalTravelMinutes ?? 120) === minutes} onClick={() => update("maxAdditionalTravelMinutes", minutes)} />)}
+                            </div>
+                          </fieldset>
+                          <fieldset>
+                            <legend className="text-xs font-semibold text-muted-foreground">Hotel changes</legend>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {([['none','None'],['one','One'],['flexible','Flexible']] as const).map(([value,label]) => <Chip key={value} label={label} active={(preferences.regionalHotelChanges ?? "one") === value} onClick={() => update("regionalHotelChanges", value)} />)}
+                            </div>
+                          </fieldset>
+                          <fieldset>
+                            <legend className="text-xs font-semibold text-muted-foreground">New country</legend>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <Chip label="Allowed" active={preferences.allowNewCountry !== false} onClick={() => update("allowNewCountry", true)} />
+                              <Chip label="Same country only" active={preferences.allowNewCountry === false} onClick={() => update("allowNewCountry", false)} />
+                            </div>
+                          </fieldset>
+                        </div>
+                      )}
+                    </fieldset>
+
                     <Field label="Anything else we should know?" id="notes">
                       <Textarea
                         id="notes"
@@ -589,6 +648,7 @@ function PlanPage() {
                           ? (preferences.diets ?? []).map((d) => DIET_LABEL[d]).join(", ")
                           : "No dietary preference",
                         `${TRANSPORT.find((t) => t.id === preferences.transport)?.label} · max ${preferences.maxTravelHours}h${preferences.avoidFlights ? " · avoiding flights" : ""}${preferences.fewerHotelChanges ? " · fewer hotel changes" : ""}`,
+                        `Regional discovery: ${(preferences.regionalDiscovery ?? "nearby-cities").replace("-", " ")} · max ${preferences.maxAdditionalTravelMinutes ?? 120} min extra travel · ${preferences.regionalHotelChanges ?? "one"} hotel change${(preferences.regionalHotelChanges ?? "one") === "one" ? "" : "s"} · ${preferences.allowNewCountry === false ? "same country" : "new countries allowed"}`,
                         preferences.notes?.trim() ? `“${preferences.notes.trim()}”` : "No extra notes",
                       ]}
                     />
@@ -618,7 +678,13 @@ function PlanPage() {
                   <ArrowRight aria-hidden />
                 </Button>
               ) : (
-                <Button variant="hero" size="lg" onClick={() => navigate({ to: "/results" })}>
+                <Button variant="hero" size="lg" onClick={async () => {
+                  if (groupToken) {
+                    try { await collaborationApi.updatePreferences(groupToken, preferences); }
+                    catch (error) { toast.error(error instanceof Error ? error.message : "Could not sync the shared trip"); return; }
+                  }
+                  void navigate({ to: "/results", search: groupToken ? { group: groupToken } : {} });
+                }}>
                   Find my routes
                   <ArrowRight aria-hidden />
                 </Button>
